@@ -2,11 +2,60 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>webpack starterkit</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wizard</title>
 </head>
 <body>
-  <h1>webpack starter</h1>
-  <p>✨ A lightweight foundation for your next webpack based frontend project.</p>
+
+<!-- Page layout -->
+<div class="container">
+  <!-- Header: -->
+  <div class="header">
+    <button id="btnStart">Rozpocznij</button>
+    <span id="perspective"></span>
+    <span id="drawing"></span>
+  </div>
+  <!-- Views: -->
+  <div class="viewsList">
+    <ul class="viewsList" id="viewsList"> <!-- Doubled class for css list property to be applied (is it a must?) -->
+      <li>Izo</li>
+      <li>XY</li>
+      <li>YZ</li>
+      <li>ZX</li>
+    </ul>
+  </div>
+  <!-- Drawing: -->
+  <div class="drawing">
+<!--    <div oncontextmenu="return false;" id="viewerContext"></div>-->
+    <div id="viewerContext"></div>
+<!--    <script id="openjscad" src="components/scripts/includeOpenJSCAD.js"></script>-->
+  </div>
+  <!-- Buttons (choosing elements): -->
+  <div class="mainChoicesList">
+    <ul class="mainChoicesList" id="mainChoicesList">
+    </ul>
+  </div>
+  <!-- Element data input: -->
+  <div class="dataInput">
+    <ul class="dataInput" id="dataInput">
+
+    </ul>
+  </div>
+  <!-- Footer: -->
+  <div class="footer">
+    <button id="btnTest">Test</button>
+    <button id="btnGenerateGCode">Wygenerować kod G</button>
+  </div>
+</div>
+<!-- Script area -->
+<div>
+<!-- better keep the order -->
+<!--  <script src="./scripts/getElement.js"></script>-->
+<!--  <script src="./scripts/auxilaryFunctions.js"></script>-->
+<!--  <script src="./scripts/index.js"></script>-->
+<!--  <script src="./scripts/objects.js"></script>-->
+<!--  <script src="./scripts/activate.js"></script>-->
+<!--  <script src="./scripts/testing.js"></script>-->
+</div>
 </body>
 </html>
