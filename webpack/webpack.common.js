@@ -2,6 +2,7 @@ const Path = require('path');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const webpack = require('webpack');
 
 module.exports = {
   entry: {
@@ -10,6 +11,7 @@ module.exports = {
   output: {
     path: Path.join(__dirname, '../build'),
     filename: 'js/[name].js',
+      // publicPath: '/public/'
   },
   optimization: {
     splitChunks: {
@@ -27,6 +29,11 @@ module.exports = {
   resolve: {
     alias: {
       '~': Path.resolve(__dirname, '../src'),
+      'webworkify$': 'webworkify-webpack',
+    },
+    fallback: {
+      // "buffer": require.resolve("buffer/"),
+      "stream": require.resolve("stream-browserify")
     },
   },
   module: {

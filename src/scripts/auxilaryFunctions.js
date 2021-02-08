@@ -1,8 +1,6 @@
 import {
     przygotowka,
     perspectives,
-    kartaObrobkiWalec,
-    kartaObrobkiKostka,
 } from "./objects";
 
 let elements = require('./elements.js');

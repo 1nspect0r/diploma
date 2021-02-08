@@ -1,0 +1,14 @@
+#viewerContext {
+  .viewer {
+    .shift-scene {
+      display: none !important;
+    }
+  }
+}
+
+#errordiv,
+#selectdiv,
+#statusdiv,
+#parametersdiv {
+  display: none !important;
+}

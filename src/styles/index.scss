@@ -1,6 +1,43 @@
+@import './hide-extra-controls';
+
 //$body-color: slateblue;
 //
 //body {
 //  color: $body-color;
 //  font-family: sans-serif;
 //}
+
+#viewerContext {
+  min-height: 400px;
+  .viewer {
+    border: none;
+  }
+}
+
+.container {
+  .drawing {
+    display: flex;
+    flex-basis: 100%;
+    flex-shrink: 1;
+    flex-grow: 1;
+
+    #viewerContext {
+      display: flex;
+      flex-basis: 100%;
+      flex-shrink: 1;
+      flex-grow: 1;
+
+      .viewer {
+        background: red;
+        //flex-basis: 100%;
+        //flex-grow: 1;
+        //flex-shrink: 1;
+        border: solid 1px red;
+      }
+    }
+
+    div {
+      padding: 0;
+    }
+  }
+}

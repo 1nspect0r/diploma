@@ -20,6 +20,9 @@ if (process.env.NODE_ENV === 'development') {
 
     require('./scripts/index.js');
 
-    require('./scripts/includeOpenJSCAD');
+    // require('@jscad/web/min.css');
+    //let gProcessor = require('./scripts/cad');
+
+      require('./scripts/draw-model');
   }
 })();

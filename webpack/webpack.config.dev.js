@@ -15,26 +15,27 @@ module.exports = merge(common, {
   devServer: {
     inline: true,
     hot: true,
+    contentBase: Path.join(__dirname, '../public'),
   },
   plugins: [
     new Webpack.DefinePlugin({
       'process.env.NODE_ENV': JSON.stringify('development'),
     }),
-    new StylelintPlugin({
-      files: Path.join('src', '**/*.s?(a|c)ss'),
-    }),
+    // new StylelintPlugin({
+    //   files: Path.join('src', '**/*.s?(a|c)ss'),
+    // }),
   ],
   module: {
     rules: [
-      {
-        test: /\.js$/,
-        include: Path.resolve(__dirname, '../src'),
-        enforce: 'pre',
-        loader: 'eslint-loader',
-        options: {
-          emitWarning: true,
-        },
-      },
+      // {
+      //   test: /\.js$/,
+      //   include: Path.resolve(__dirname, '../src'),
+      //   enforce: 'pre',
+      //   loader: 'eslint-loader',
+      //   options: {
+      //     emitWarning: true,
+      //   },
+      // },
       {
         test: /\.html$/i,
         loader: 'html-loader',
