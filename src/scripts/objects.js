@@ -7,7 +7,7 @@ export let otworKostka = {
     x, y - położenie osi otworu w osiach odpowiednio X i Y; <br>
     d, h - średnica i głębokość otworu. <br>
     Stożek o kącie 120 stopni.`,
-    
+
     listaWymiarow: [],
     nazwyWymiarow: [`x`, `y`, `d`, `h`]
 };
@@ -24,7 +24,8 @@ let otworWalec = {
     nazwyWymiarow: [`d`, `h`]
 };
 
-export let wybranyElement;
+export let wybranyElement = null;
+
 // Karty obróbek:
 export let kartaObrobkiKostka = {
     listaObrobek: [],
@@ -51,10 +52,10 @@ export let kartaObrobkiWalec = {
 // Przygotowki:
 export let kostka = {
     nazwa: `kostka`,
-    
+
     listaWymiarow: [],
-    nazwyWymiarów: [`długość`, `szerokość`, `wysokość`],
-    
+    nazwyWymiarow: [`długość`, `szerokość`, `wysokość`],
+
     kartaObrobki: { ...kartaObrobkiKostka }
 };
 export let walec = {
@@ -62,9 +63,8 @@ export let walec = {
 
     listaWymiarow: [],
     nazwyWymiarow: [`długosc`, `średnica`],
-    
+
     kartaObrobki: { ...kartaObrobkiWalec }
 };
 
-export let przygotowka; // here goes the przygotowka object choosen
 export let listaPrzygotowek = [kostka, walec];

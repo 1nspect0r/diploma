@@ -1,6 +1,5 @@
 import {clearHTML, appendHTML, selectPerspective, generateGCode} from "./auxilaryFunctions";
 import {
-    przygotowka,
     kartaObrobkiKostka,
     kartaObrobkiWalec,
     kostka,
@@ -11,6 +10,8 @@ import {
     wybranyElement
 } from "./objects";
 
+// noinspection SpellCheckingInspection
+let przygotowka = null;
 let elements = require('./elements.js');
 
 function bringUp(arrayOfObjectsWithNazwaProperty, goToStep) {
@@ -18,21 +19,27 @@ function bringUp(arrayOfObjectsWithNazwaProperty, goToStep) {
     for (let i of arrayOfObjectsWithNazwaProperty) {
         appendHTML(elements.mainChoicesList, `<li>${i.nazwa}</li>`);
     }
-    for (let i of elements.mainChoicesList) {
-        i.addEventListener(`click`, goToStep);
+
+    debugger;
+    for (let el of elements.mainChoices) {
+        console.log('zxxxxxx', el);
+        el.addEventListener(`click`, goToStep);
     }
 }
 
-function identifyAndSetUp(clicked, variable, array, goToStep) {
-    for (let i of array) {
-        if (clicked.innerHTML === i.nazwa) {
-            variable = i;
+function identifyAndSetUp(clicked, variable, list, goToStep) {
+    for (let item of list) {
+        if (clicked.innerHTML === item.nazwa) {
+            variable = item;
             /*
             setUp(i.nazwyWymiarów, goToStep)
             */
             // setUp function:
             clearHTML(elements.dataInput);
-            for (let j of i.nazwyWymiarow) {
+            console.log(item.nazwyWymiarow);
+            console.log(item);
+            debugger;
+            for (let j of item.nazwyWymiarow) {
                 appendHTML(elements.dataInput, `<li>${j}<br>
                 <input type="text"></li>`);
             }
@@ -72,12 +79,14 @@ function modifyModel() {
 }
 // Main line:
 function etapPrzygotowki() {
-    
+
     krok1();
     function krok1() {
+        debugger;
         bringUp(listaPrzygotowek, krok2);
     }
-    function krok2() { 
+    function krok2() {
+        debugger;
         przygotowka = identifyAndSetUp(this, przygotowka, listaPrzygotowek, krok3);
     }
     function krok3() {
@@ -91,9 +100,11 @@ function etapObrobki() {
 
     krok1();
     function krok1() {
+        debugger;
         bringUp(przygotowka.kartaObrobki.listaElementow, krok2);
     }
     function krok2() {
+        debugger;
         wybranyElement = identifyAndSetUp(this, wybranyElement, przygotowka.kartaObrobki.listaElementow, krok3);
     }
     function krok3() {
@@ -116,7 +127,9 @@ function bindListeners() {
     // Class "mainChoicesList":
     // Class "dataInput":
     // Class "footer":
-    btnGenerateGCode.addEventListener(`click`, generateGCode);
+    btnGenerateGCode.addEventListener(`click`, function () {
+        generateGCode(przygotowka);
+    });
 }
 
 // document.addEventListener("DOMContentLoaded", function() {
