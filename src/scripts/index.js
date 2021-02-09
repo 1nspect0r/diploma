@@ -8,19 +8,27 @@ import {
     walec,
     listaPrzygotowek
 } from "./objects";
+import {debug} from "webpack";
 
 // noinspection SpellCheckingInspection
-let elements = require('./elements.js');
-let processor = require('./cad').gProcessor;
-let model = ``;
+const elements = require('./elements.js');
+const processor = require('./cad').gProcessor;
+const originFunction = require('../models/origin-function');
 let przygotowka = null;
 let wybranyElement = null;
 
-/*
-function drawOrigin() {
-    const origin = require('../models/origin');
-    processor.setJsCad(origin);
-}*/
+let model = null;
+let additionalFunctions = [``, ``, ``]; // [origin, center, functions]
+let openjscadCodeElements = [`
+function main() {
+    let model = union(
+        `, additionalFunctions[0],`,
+        difference(
+            `, model, `
+    ))`, additionalFunctions[1],`;
+    return model;
+}`, additionalFunctions[2]];
+
 function bringUp(arrayOfObjectsWithNazwaProperty, goToStep) {
     clearHTML(elements.mainChoicesList);
     for (let item of arrayOfObjectsWithNazwaProperty) {
@@ -31,7 +39,6 @@ function bringUp(arrayOfObjectsWithNazwaProperty, goToStep) {
         el.addEventListener('click', goToStep);
     }
 }
-
 function identifyAndSetUp(clicked, list, goToStep) {
     let variable;
     for (let item of list) {
@@ -53,52 +60,47 @@ function identifyAndSetUp(clicked, list, goToStep) {
     }
     return variable;
 }
-/*
-function setUp(nazwyWymiarowArray, goToStep) {
-    clearHTML(dataInput);
-    for (let i of nazwyWymiarowArray) {
-        appendHTML(dataInput, `<li>${i}<br>
-        <input type="text"></li>`);
-    }
-    appendHTML(dataInput, `<button id="getInput">Zapisz</button>`);
-    getInput = document.getElementById(`getInput`);
-    getInput.addEventListener(`click`, goToStep);
-}
-*/
 function readInput(ObjectWithListaWymiarowArrayProperty) {
     for (let i = 0; i < elements.input.length; i++) {
         ObjectWithListaWymiarowArrayProperty.listaWymiarow[i] = elements.input[i].value;
     }
     clearHTML(elements.dataInput);
 }
+// Modeling functions:
+function gatherCode() {
+    openjscadCodeElements[1] = additionalFunctions[0];
+    openjscadCodeElements[3] = model;
+    openjscadCodeElements[5] = additionalFunctions[1];
+    openjscadCodeElements[7] = additionalFunctions[2];
+    let codeDraft;
+    return `foo`;
+    //return openjscadCodeElements.forEach(element => codeDraft.concat[element]); // does this work?
+}
 function createModel() {
-    let figure;
-    let additionalInsert;
+    let insertFigure;
+    let insertAdditional;
     switch (przygotowka) {
         case kostka:
-            figure = `cube({size: [${przygotowka.listaWymiarow[0]}, ${przygotowka.listaWymiarow[1]}, ${przygotowka.listaWymiarow[2]}]})`;
-            additionalInsert = `.translate([0, 0, -${przygotowka.listaWymiarow[2]}])`;
+            insertFigure = `cube({size: [${przygotowka.listaWymiarow[0]}, ${przygotowka.listaWymiarow[1]}, ${przygotowka.listaWymiarow[2]}]})`;
+            insertAdditional = `.translate([0, 0, ${-przygotowka.listaWymiarow[2]}])`;
+            additionalFunctions[0] = `drawOrigin().translate([0, 0, 1])`;
+            additionalFunctions[1] = `.translate([${-przygotowka.listaWymiarow[0]/2}, ${-przygotowka.listaWymiarow[1]/2}, 0])`;
             break;
         case walec:
-            figure = `cylinder({r: ${przygotowka.listaWymiarow[0]/2}, h: ${przygotowka.listaWymiarow[1]}})`;
-            additionalInsert = `.rotateX(-90)`;
+            insertFigure = `cylinder({r: ${przygotowka.listaWymiarow[0]/2}, h: ${przygotowka.listaWymiarow[1]}})`;
+            insertAdditional = `.rotateX(-90)`;
+            additionalFunctions[0] = `drawOrigin().rotateX(-90).translate([0, -1, 0])`; // axes (code)=(drawing): X=X, Y=-Z, Z=Y
+            additionalFunctions[1] = `.translate([0, ${przygotowka.listaWymiarow[1]/2}, 0])`;
             break;
         default:
             alert(`Nie wybrano przygotówki. Zmienna "przygotowka" to ${przygotowka}`);
             break;
     }
-    model = `
-    function main() {
-        let model = difference(
-            ${figure}${additionalInsert}
-        ); return model; }`;
-    debugger;
-    drawModel(model);
+    model = `${insertFigure}${insertAdditional}`;
+    additionalFunctions[2] = originFunction;
+    drawModel(gatherCode());
 }
 function modifyModel(przygotowka) {
-    debugger;
-    model -= `
-    ); return model; }`;                      // not a solution. Find this string, then slice
     switch (przygotowka) {
         case kostka:
             debugger;
@@ -112,24 +114,14 @@ function modifyModel(przygotowka) {
             alert(`Przygotówki nie znaleziono. Zmienna "przygotowka" to ${przygotowka}`);
             break;
     }
-    model += `
-    ); return model; }`;
-    drawModel(model);
-    /*
-    if (elements.drawing.innerHTML !== '') {
-        elements.drawing.innerHTML += ` + ${przygotowka.kartaObrobki.listaObrobek[length].nazwa} ${przygotowka.kartaObrobki.listaObrobek[length].listaWymiarow}`;
-    } else {
-        elements.drawing.innerHTML = `${przygotowka.nazwa} ${przygotowka.listaWymiarow}`;
-    }
-    */
+    drawModel(gatherCode());
 }
 function dodacObrobkeKostka() {
-    let elementInsert = `,
+    let insertElement = `,
     `;
-    elementInsert += `cylinder({r: 2, h: 100}).translate([10,10,-50])`;
-    switch (przygotowka.kartaObrobki.listaObrobek[length].nazwa) {
+    switch (przygotowka.kartaObrobki.listaObrobek[length].nazwa) { // does not switch, empty listaObrobek!
         case `otwór`:
-            //elementInsert = `cylinder({r: ${przygotowka.kartaObrobki.listaObrobek[length].}, h: }).translate([, , ])`;
+            //insertElement = `cylinder({r: ${przygotowka.kartaObrobki.listaObrobek[length].}, h: }).translate([, , ])`;
             console.log(`Otwór dodany.`);
             break;
         case ``:
@@ -139,7 +131,7 @@ function dodacObrobkeKostka() {
             alert(`Został dodany nierozpoznany element.`);
             break;
     }
-    return elementInsert;
+    return insertElement;
 }
 function dodacObrobkeWalec() {
     switch (przygotowka.kartaObrobki.listaObrobek[length].nazwa) {
@@ -154,12 +146,13 @@ function dodacObrobkeWalec() {
             break;
     }
 }
-function drawModel(model) {
-    processor.setJsCad(model);
+function drawModel(openjscadCode) {
+    processor.setJsCad(openjscadCode);
 }
 
 // Main line:
 function etapPrzygotowki() {
+
     krok1();
     function krok1() {
         bringUp(listaPrzygotowek, krok2);
@@ -193,7 +186,7 @@ function etapObrobki() {
 // Activation:
 function bindListeners() {
     // Class "header":
-    btnStart.addEventListener('click', etapPrzygotowki);
+    elements.btnStart.addEventListener('click', etapPrzygotowki);
 
     // Class "viewsList":
     for (let i = 0; i < elements.views.length; i++) {
@@ -204,10 +197,10 @@ function bindListeners() {
     // Class "mainChoicesList":
     // Class "dataInput":
     // Class "footer":
-    btnGenerateGCode.addEventListener('click', function () {
+    elements.btnGenerateGCode.addEventListener('click', function () {
         generateGCode(przygotowka);
     });
-    btnFinish.addEventListener('click', () => {
+    elements.btnFinish.addEventListener('click', () => {
         console.log(`Finished.`);
     });
 }

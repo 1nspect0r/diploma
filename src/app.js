@@ -21,6 +21,6 @@ if (process.env.NODE_ENV === 'development') {
         // require('@jscad/web/min.css');
         // let gProcessor = require('./scripts/cad');
 
-        require('./scripts/draw-model');
+        // require('./scripts/draw-model');
     }
 })();
