@@ -8,7 +8,7 @@ import {
     walec,
     listaPrzygotowek
 } from "./objects";
-import {debug} from "webpack";
+
 
 // noinspection SpellCheckingInspection
 const elements = require('./elements.js');
