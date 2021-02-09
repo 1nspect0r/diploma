@@ -1,9 +1,5 @@
-import {
-    perspectives,
-} from "./objects";
-
 let elements = require('./elements.js');
-
+let perspectives = [`isometric`, `plane XY`, `plane YZ`, `plane ZX`];
 
 export function selectPerspective() {
     for (let i = 0; i < elements.views.length; i++) {

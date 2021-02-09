@@ -2,27 +2,25 @@ import './styles/index.scss';
 import './styles/style.css';
 
 if (process.env.NODE_ENV === 'development') {
-  require('./index.html');
+    require('./index.html');
 }
 
 (function () {
-  document.addEventListener("DOMContentLoaded", function () {
-    main();
-  });
+    document.addEventListener("DOMContentLoaded", function () {
+        main();
+    });
 
-  // application entry point
-  // `public static void main like`
-  function main() {
-    // require('./scripts/auxilaryFunctions.js');
-    // require('./scripts/objects.js');
-    // import './scripts/activate.js';
-    require('./scripts/testing.js');
+    // application entry point
+    function main() {
+        // require('./scripts/auxilaryFunctions.js');
+        // require('./scripts/objects.js');
+        // import './scripts/activate.js';
 
-    require('./scripts/index.js');
+        require('./scripts/index.js');
 
-    // require('@jscad/web/min.css');
-    //let gProcessor = require('./scripts/cad');
+        // require('@jscad/web/min.css');
+        // let gProcessor = require('./scripts/cad');
 
-      require('./scripts/draw-model');
-  }
+        require('./scripts/draw-model');
+    }
 })();

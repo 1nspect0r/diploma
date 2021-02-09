@@ -1,4 +1,2 @@
-const modelSrc = require('../models/m-2');
-
-let processor = require('./cad').gProcessor;
+const modelSrc = require('../models/origin');
 processor.setJsCad(modelSrc);

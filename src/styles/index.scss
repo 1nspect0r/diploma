@@ -22,17 +22,20 @@
     flex-grow: 1;
 
     #viewerContext {
+      /*
       display: flex;
       flex-basis: 100%;
       flex-shrink: 1;
       flex-grow: 1;
-
+      */
+      height: 600px;
+      width: 600px;
       .viewer {
-        background: red;
+        background: #0df0df;
         //flex-basis: 100%;
         //flex-grow: 1;
         //flex-shrink: 1;
-        border: solid 1px red;
+        //border: solid 1px red;
       }
     }
 

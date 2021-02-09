@@ -17,6 +17,6 @@ module.exports = {
     input: document.getElementById(`dataInput`).getElementsByTagName(`input`),
     getInput: [],
     // Class "footer":
-    btnTest: document.getElementById(`btnTest`), // FOR TESTING PURPOSES
     btnGenerateGCode: document.getElementById(`btnGenerateGCode`),
+    btnFinish: document.getElementById('btnFinish')
 };

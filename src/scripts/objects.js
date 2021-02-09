@@ -1,19 +1,19 @@
-export let perspectives = [`izometric`, `plane XY`, `plane YZ`, `plane ZX`];
 // Obróbki:
 export let otworKostka = {
-    nazwa: 'otwor',
+    nazwa: 'otwór',
     opis: `Otwór. <br>
     Wymiary: <br>
     x, y - położenie osi otworu w osiach odpowiednio X i Y; <br>
     d, h - średnica i głębokość otworu. <br>
+    Oś otworu jest prostoliniowa do osi Z. <br>
     Stożek o kącie 120 stopni.`,
 
     listaWymiarow: [],
     nazwyWymiarow: [`x`, `y`, `d`, `h`]
 };
 
-let otworWalec = {
-    nazwa: 'otwor',
+export let otworWalec = {
+    nazwa: 'otwór',
     opis: `Otwór. <br>
     Wymiary: <br>
     d, h - średnica i głębokość otworu. <br>
@@ -23,8 +23,6 @@ let otworWalec = {
     listaWymiarow: [],
     nazwyWymiarow: [`d`, `h`]
 };
-
-export let wybranyElement = null;
 
 // Karty obróbek:
 export let kartaObrobkiKostka = {
@@ -54,17 +52,18 @@ export let kostka = {
     nazwa: `kostka`,
 
     listaWymiarow: [],
-    nazwyWymiarow: [`długość`, `szerokość`, `wysokość`],
+    nazwyWymiarow: ['szerokość', 'długość', 'wysokość'],
 
     kartaObrobki: { ...kartaObrobkiKostka }
 };
+
 export let walec = {
     nazwa: `walec`,
 
     listaWymiarow: [],
-    nazwyWymiarow: [`długosc`, `średnica`],
+    nazwyWymiarow: ['średnica', 'długość'],
 
     kartaObrobki: { ...kartaObrobkiWalec }
 };
 
-export let listaPrzygotowek = [kostka, walec];
+export const listaPrzygotowek = [kostka, walec];
