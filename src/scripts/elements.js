@@ -1,22 +1,26 @@
 module.exports = {
-    // might be rewritten with querySelector, but it requires rewriting after changing the content (mainChoices isn't updated automatically when mainChoicesList is)
-
     // Class "header":
     btnStart: document.getElementById(`btnStart`),
-    // Class "viewsList":
-    views: document.getElementById(`viewsList`).getElementsByTagName(`li`),
-    activeElements: document.getElementsByClassName(`active`),
+        //openedFilesList: document.getElementById(`openedFiles`),
+        //openedFiles: document.getElementById(`openedFiles`).getElementsByTagName(`li`),
+    // Class "leftList":
+        //views: document.getElementById(`leftList`).getElementsByTagName(`li`),
+        //activeElements: document.getElementsByClassName(`active`),
+        //history: document.getElementById(`history`),
     // Class "drawing":
     drawing: document.getElementById(`drawing`),
     perspective: document.getElementById(`perspective`),
-    // Class "mainChoicesList":
-    mainChoicesList: document.getElementById(`mainChoicesList`),
-    mainChoices: document.getElementById(`mainChoicesList`).getElementsByTagName(`li`),
+    // Class "rightList":
+    upperField: document.getElementById(`upperField`),
+    choicesList: document.getElementById(`mainChoicesList`),
+    choices: document.getElementById(`mainChoicesList`).getElementsByTagName(`li`),
     // Class "dataInput":
-    dataInput: document.getElementById(`dataInput`),
-    input: document.getElementById(`dataInput`).getElementsByTagName(`input`),
+    lowerField: document.getElementById(`lowerField`),
+    inputsList: document.getElementById(`dataInput`),
+    inputs: document.getElementById(`dataInput`).getElementsByTagName(`input`),
     getInput: [],
     // Class "footer":
     btnGenerateGCode: document.getElementById(`btnGenerateGCode`),
-    btnFinish: document.getElementById('btnFinish')
+    btnExport: document.getElementById('btnExport'),
+    inputFile: document.getElementById('input-file')
 };

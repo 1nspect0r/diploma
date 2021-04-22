@@ -1,48 +1,52 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Wizard</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wizard</title>
 </head>
 <body>
 
 <!-- Page layout -->
 <div class="container">
-  <!-- Header: -->
-  <div class="header">
-    <button id="btnStart">Rozpocznij</button>
-    <span id="perspective"></span>
-    <span id="drawing"></span>
-  </div>
-  <!-- Views: -->
-  <div class="viewsList">
-    <ul class="viewsList" id="viewsList"> <!-- Doubled class for css list property to be applied (is it a must?) -->
-      <li>Izo</li>
-      <li>XY</li>
-      <li>YZ</li>
-      <li>ZX</li>
-    </ul>
-  </div>
-  <!-- Drawing: -->
-  <div class="drawing">
-    <div id="viewerContext"></div>
-  </div>
-  <!-- Buttons (choosing elements): -->
-  <div class="mainChoicesList">
-    <ul class="mainChoicesList" id="mainChoicesList">
-    </ul>
-  </div>
-  <!-- Element data input: -->
-  <div class="dataInput">
-    <ul class="dataInput" id="dataInput">
-    </ul>
-  </div>
-  <!-- Footer: -->
-  <div class="footer">
-    <button id="btnGenerateGCode">Wygenerować kod G</button>
-    <button id="btnFinish">Zakończ</button>
-  </div>
+    <!-- Header: -->
+    <div class="header">
+        <button id="btnStart">Rozpocznij</button>
+        <!--<ul id="openedFiles"></ul>-->
+        <!--<span id="perspective"></span>-->
+        <!--<span id="drawing"></span>-->
+    </div>
+    <!-- Views/History: -->
+    <!--
+    <div class="leftList" id="leftField">
+        <ul class="leftList" id="viewsList">
+            <li>Izo</li>
+            <li>XY</li>
+            <li>YZ</li>
+            <li>ZX</li>
+        </ul>
+        <ul class="leftList" id="history"></ul>
+    </div>
+    -->
+    <!-- Drawing: -->
+    <div class="drawing">
+        <div id="viewerContext"></div>
+    </div>
+    <!-- Buttons (choosing elements): -->
+    <div class="rightList" id="upperField">
+        <ul class="rightList" id="mainChoicesList"></ul>
+    </div>
+    <!-- Data input: -->
+    <div class="dataInput" id="lowerField">
+        <ul class="dataInput" id="dataInput"></ul>
+    </div>
+    <!-- Footer: -->
+    <div class="footer">
+        <button id="btnGenerateGCode">Wygenerować kod G</button>
+        <button id="btnExport">Export</button>
+        <label for="input-file">Import:</label>
+        <input type="file" id="input-file">
+    </div>
 </div>
 </body>
 </html>

@@ -7,32 +7,36 @@ body {
 
     font-family: "Quicksand", sans-serif;
     font-weight: bold;
-    font-size: 20px;
+    font-size: 16px;
 
     display: grid;
-    grid-template: 50px 1fr 1fr 50px / 100px 1fr 200px;
+    grid-template: 50px 1fr 1fr 50px / 1fr 200px;
     padding: 10px;
     box-sizing: border-box;
 
-    gap: 10px;
+    gap: 5px;
 }
 .container div {
     padding: 10px;
     border: 2px solid #000000;
 }
+/*
 .active {
     background-color: #ffc760;
 }
+*/
 /* Individual divs: */
 .header {
     position: relative;
     grid-column: 1 / 4;
 }
-.viewsList {
+/*
+.leftList {
     position: relative;
     grid-row: 2 / 4;
     list-style-type: none;
 }
+*/
 .drawing {
     position: relative;
     grid-row: 2 / 4;
@@ -40,24 +44,18 @@ body {
 #opensjcad {
     background-color: #f70000;
 }
-.mainChoicesList {
+.rightList {
     position: relative;
     list-style-type: none;
+    grid-row: 2 / 3;
+    overflow: auto;
 }
 .dataInput {
     position: relative;
     list-style-type: none;
+    grid-row: 3 / 4;
 }
 .footer {
     position: relative;
     grid-column: 1 / 4;
-}
-/* Other: */
-.comment {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    font-weight: lighter;
-    font-size: 14px;
-    color: #e0a956
 }

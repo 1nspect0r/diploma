@@ -11,7 +11,6 @@ export let otworKostka = {
     listaWymiarow: [],
     nazwyWymiarow: [`x`, `y`, `d`, `h`]
 };
-
 export let otworWalec = {
     nazwa: 'otwór',
     opis: `Otwór. <br>
@@ -35,7 +34,6 @@ export let kartaObrobkiKostka = {
         this.listaObrobek.push(otwor);
     }
 };
-
 export let kartaObrobkiWalec = {
     listaObrobek: [],
     listaElementow: [otworWalec],
@@ -56,7 +54,6 @@ export let kostka = {
 
     kartaObrobki: { ...kartaObrobkiKostka }
 };
-
 export let walec = {
     nazwa: `walec`,
 
@@ -65,5 +62,4 @@ export let walec = {
 
     kartaObrobki: { ...kartaObrobkiWalec }
 };
-
 export const listaPrzygotowek = [kostka, walec];
