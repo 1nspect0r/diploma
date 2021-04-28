@@ -132,16 +132,30 @@ function example12() {
 }
 function example13() {
     // R = 5, l = 2, h = 1, x0 = 10, y0 = 10
-    let a = difference(cylinder({r: 4, h: 1}), cylinder({r: 6, h: 1})).translate([10, 10. -1]);
-    return a;
+
+    let a = cylinder({r: 4, h: 1});
+    let b = cylinder({r: 6, h: 1});
+    let c = difference(b, a);
+    let d = c.translate([10, 10. -1]);
+
+    return c;
+}
+function example14() {
+
+    let a = drawOrigin([[5, 0, 0], [0, 5, 0], [0, 0, 0]]);
+    let b = a.rotateX(-180);
+    let c = cylinder({r: 5, h: 40)
+    let model = union(
+        drawOrigin([[5, 0, 0], [0, 5, 0], [0, 0, 0]]).rotateX(-180),
+        difference(
+            cylinder({r: 5, h: 40).rotateX(180)
+        )
+    ).translate([0, -20, 0]);
+    return model;
 }
 function main () {
     //return cube();
-
-
-
-    return b;
-    //return example13();
+    return example14();
 }
 
 

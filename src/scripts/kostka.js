@@ -7,6 +7,17 @@ let x = {
     nazwyWymiarow: [``]
 };
 */
+/*
+let frezowanieBoku1 = {
+    nazwa: `frezowanie boku`,
+    opis: `Frezowanie boku. <br>
+h - grubość warstwy do zdjęcia; <br>
+r - promień zaokrąglenia `, // to be continued
+
+    listaWymiarow: [],
+    nazwyWymiarow: [`h`, `r`]
+};
+*/
 const rowekKolowy1 = {
     nazwa: `rowek kołowy`,
     opis: `Rowek kołowy. <br>
@@ -23,7 +34,7 @@ const czolo1 = {
     nazwa: `czoło`,
     opis: `Obróbka czoła. <br>
 Wymiary: <br>
-h - grubość warstwy. <br>
+h - grubość warstwy do zdjęcia. <br>
 Grubość warstwy nie wlicza się do następujących obróbek, należy podawać wartości uwzględniając obróbkę czoła!`,
 
     listaWymiarow: [],

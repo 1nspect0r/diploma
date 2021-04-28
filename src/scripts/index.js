@@ -104,9 +104,10 @@ const functionsKostka = { // przygotowka must be defined
                         let [x0, y0, R, l, h] = i.listaWymiarow;
                         partParts = [                                                               // Indexes:
                             `difference(`,                                                          // 0
-                                `cylinder({r: ${R - l / 2}, h: ${h}}), `,                           // 1
-                                `cylinder({r: ${parseFloat(R) + parseFloat(l) / 2}, h: ${h}})`,     // 2
-                            `).translate([${x0}, ${y0}, ${-h}])`                                    // 3
+                                `cylinder({r: ${parseFloat(R) + parseFloat(l) / 2}, h: ${h}})`,     // 1
+                                `, `,                                                               // 2
+                                `cylinder({r: ${R - l / 2}, h: ${h}})`,                             // 3
+                            `).translate([${x0}, ${y0}, ${-h}])`                                    // 4
                         ];
                         {
                             if (R - l / 2 < 0) { // R < l / 2
@@ -115,7 +116,8 @@ const functionsKostka = { // przygotowka must be defined
                                 break;
                             }
                             if (R - l / 2 === 0) { // R === l / 2
-                                partParts[1] = ``;
+                                partParts[2] = ``;
+                                partParts[3] = ``;
                             }
                         } // conditions
                         modelParts.push(partParts.join(``));
@@ -165,16 +167,18 @@ const functionsWalec = {
     generateCodeFromScratch: function() {
         modelParts = [];
         let [srednica, dlugosc] = przygotowka.listaWymiarow;
-        modelParts.push(``); // kod walca
-        originModel = `drawOrigin([[0, 0, 0], [0, 0, 0], [0, 0, 0]]), `;
+        modelParts.push(`cylinder({r: ${srednica / 2}, h: ${dlugosc}}).rotateX(-90)`);
+        originModel = `drawOrigin([[${srednica / 2}, 0, 0], [0, ${srednica / 2}, 0], [0, 0, 0]]).rotateX(90), `;
         for (let i of przygotowka.kartaObrobki.listaObrobek) {
             switch (i.nazwa) {
-                case ``:
+                case `toczenie wzdłużne`:
                     {
-                        let [] = i.listaWymiarow;
+                        let [d0, d, h] = i.listaWymiarow;
                         partParts = [
-                            `union(`,
-                            `).translate([0, 0, 0])`
+                            `difference(`,
+                                `cylinder({r: ${d0 / 2}, h: ${h}}), `,
+                                `cylinder({r: ${d / 2}, h: ${h}})`,
+                            `).rotateX(-90)`
                         ];
                         modelParts.push(partParts.join(``));
                         partParts = [];
@@ -182,12 +186,12 @@ const functionsWalec = {
                     break;
                 case `otwór`:
                 {
-                    let [x, y, d, h] = i.listaWymiarow;
+                    let [d, h] = i.listaWymiarow;
                     partParts = [
                         `union(`,
-                        `cylinder({r: ${d / 2}, h: ${h}}), `,
-                        `cylinder({r1: ${d / 2}, r2: 0, h: ${d / 4 * Math.tan(30 * Math.PI / 180)}}).rotateY(180)`,
-                        `).translate([${x}, ${y}, ${-h}])`
+                            `cylinder({r: ${d / 2}, h: ${h}}), `,
+                            `cylinder({r1: ${d / 2}, r2: 0, h: ${d / 4 * Math.tan(30 * Math.PI / 180)}}).translate([0, 0, ${h}])`,
+                        `).rotateX(-90)`
                     ];
                     modelParts.push(partParts.join(``));
                     partParts = [];
@@ -202,7 +206,7 @@ const functionsWalec = {
         codeParts[1] = originModel;
         mainModel = modelParts.join(`, `);
         codeParts[3] = mainModel; // manipulates with model, not function. Adds coma to model.
-        centering = `.translate([${-szerokosc / 2}, ${-dlugosc / 2}, 0])`;
+        centering = `.translate([0, ${-dlugosc / 2}, 0])`;
         codeParts[5] = centering;
         code = codeParts.join(``); // manipulates with function, not model. Doesn't add coma to function.
     },
