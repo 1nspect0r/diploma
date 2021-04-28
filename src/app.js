@@ -10,7 +10,7 @@ if (process.env.NODE_ENV === 'development') {
         main();
     });
 
-    // application entry point
+    // application entry points
     function main() {
         // require('./scripts/auxilaryFunctions.js');
         // require('./scripts/objects.js');

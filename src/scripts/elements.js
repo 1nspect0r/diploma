@@ -6,7 +6,8 @@ module.exports = {
     // Class "leftList":
         //views: document.getElementById(`leftList`).getElementsByTagName(`li`),
         //activeElements: document.getElementsByClassName(`active`),
-        //history: document.getElementById(`history`),
+    history: document.getElementById(`history`),
+    points: document.getElementById(`history`).getElementsByTagName(`li`),
     // Class "drawing":
     drawing: document.getElementById(`drawing`),
     perspective: document.getElementById(`perspective`),
@@ -19,6 +20,7 @@ module.exports = {
     inputsList: document.getElementById(`dataInput`),
     inputs: document.getElementById(`dataInput`).getElementsByTagName(`input`),
     getInput: [],
+    wstecz: [],
     // Class "footer":
     btnGenerateGCode: document.getElementById(`btnGenerateGCode`),
     btnExport: document.getElementById('btnExport'),

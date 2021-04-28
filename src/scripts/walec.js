@@ -1,25 +1,33 @@
-export let otworWalec = {
+/*
+let x = {
+    nazwa: ``,
+    opis: ``,
+
+    listaWymiarow: [],
+    nazwyWymiarow: [``]
+};
+*/
+let otwor1 = {
     nazwa: 'otwór',
-    opis: `Otwór.
-Wymiary:
-d, h - średnica i głębokość otworu.
-Oś otworu jest osią walca.
+    opis: `Otwór. <br>
+Wymiary: <br>
+d, h - średnica i głębokość otworu. <br>
+Oś otworu jest osią walca. <br>
 Stożek o kącie 120 stopni.`,
 
-
-    listaWymiarow: [0, 0],
+    listaWymiarow: [],
     nazwyWymiarow: [`d`, `h`]
 };
-export let kartaObrobkiWalec = {
-    listaObrobek: [],
-    dostepneObrobki: [otworWalec]
-};
 export let walec = {
-    nazwa: `walec NIE WOLNO`,
-    opis: `Walec. `,
+    nazwa: `walec`,
+    opis: `Walec. <br>
+`,
 
-    listaWymiarow: [0, 0],
+    listaWymiarow: [],
     nazwyWymiarow: ['średnica', 'długość'],
 
-    kartaObrobki: { ...kartaObrobkiWalec }
+    kartaObrobki: {
+        listaObrobek: [],
+        dostepneObrobki: [otwor1]
+    }
 };

@@ -10,7 +10,7 @@ body {
     font-size: 16px;
 
     display: grid;
-    grid-template: 50px 1fr 1fr 50px / 1fr 200px;
+    grid-template: 50px 1fr 1fr 50px / 200px 1fr 300px;
     padding: 10px;
     box-sizing: border-box;
 
@@ -30,13 +30,12 @@ body {
     position: relative;
     grid-column: 1 / 4;
 }
-/*
 .leftList {
     position: relative;
     grid-row: 2 / 4;
     list-style-type: none;
+    overflow: auto;
 }
-*/
 .drawing {
     position: relative;
     grid-row: 2 / 4;

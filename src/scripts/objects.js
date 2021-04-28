@@ -1,3 +1,4 @@
+/*
 // Obróbki:
 export let otworKostka = {
     nazwa: 'otwór',
@@ -63,3 +64,4 @@ export let walec = {
     kartaObrobki: { ...kartaObrobkiWalec }
 };
 export const listaPrzygotowek = [kostka, walec];
+*/
