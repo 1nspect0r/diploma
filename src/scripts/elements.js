@@ -3,6 +3,9 @@ module.exports = {
     btnStart: document.getElementById(`btnStart`),
         //openedFilesList: document.getElementById(`openedFiles`),
         //openedFiles: document.getElementById(`openedFiles`).getElementsByTagName(`li`),
+    btnGenerateGCode: document.getElementById(`btnGenerateGCode`),
+    btnExport: document.getElementById('btnExport'),
+    inputFile: document.getElementById('input-file'),
     // Class "leftList":
         //views: document.getElementById(`leftList`).getElementsByTagName(`li`),
         //activeElements: document.getElementsByClassName(`active`),
@@ -22,7 +25,5 @@ module.exports = {
     getInput: [],
     wstecz: [],
     // Class "footer":
-    btnGenerateGCode: document.getElementById(`btnGenerateGCode`),
-    btnExport: document.getElementById('btnExport'),
-    inputFile: document.getElementById('input-file')
+    console_log: document.getElementById(`console-log`)
 };

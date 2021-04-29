@@ -1,4 +1,4 @@
-import {clearHTML, modifyHTML, dateTimeFormat1} from "./auxilaryFunctions";
+import {clearHTML, modifyHTML, dateTimeFormat} from "./auxilaryFunctions";
 
     // noinspection SpellCheckingInspection
 const kostka = require('./kostka').kostka;
@@ -24,9 +24,12 @@ let mainModel = ``; // = modelParts.join(', ') here code for figures is united
 let codeParts = [`
 function main() {
     let model =
-        union(`, originModel,
-        `difference(`, mainModel,
-        `))`, centering ,`;
+        union(`,
+            originModel,
+            `difference(`,
+                mainModel,
+            `)
+        )`, centering, `;
     return model;
 }
 `, originFunction]; // here code for figures is stored with the functional code
@@ -35,6 +38,14 @@ const functionsKostka = { // przygotowka must be defined
     generateCodeFromScratch: function() {
         modelParts = [];
         let [szerokosc, dlugosc, wysokosc] = przygotowka.listaWymiarow;
+        {
+            if (szerokosc === 0 || dlugosc === 0 || wysokosc === 0) {
+                report(`Wymiary nie mogą być równe 0. `);
+                przygotowka = {};
+                etapPrzygotowki();
+                return;
+            }
+        } // conditions
         modelParts.push(`cube({size: [${szerokosc}, ${dlugosc}, ${wysokosc}]}).translate([0, 0, ${-wysokosc}])`); // origin at top plane, centered
         //originModel = `drawOrigin([[0, 0, 1], [0, 0, 1], [0, 0, 1]]), `;
         originModel = `drawOrigin([[${szerokosc}, 0, 0], [0, ${dlugosc}, 0], [0, 0, 0]]), `;
@@ -43,6 +54,13 @@ const functionsKostka = { // przygotowka must be defined
                 case `czoło`: // PO OBROBCE CZOLA ZMIENIA SIE GLEBOKOSC!
                     {
                         let [h] = i.listaWymiarow;
+                        {
+                            if (h === 0) {
+                                report(`Parametr h nie może być równy 0. `);
+                                toRemove = 1;
+                                break;
+                            }
+                        } // conditions
                         modelParts.push(`cube({size: [${szerokosc}, ${dlugosc}, ${h}]}).translate([0, 0, ${-h}])`);
                     }
                     break;
@@ -55,6 +73,14 @@ const functionsKostka = { // przygotowka must be defined
                                 `cylinder({r1: ${d / 2}, r2: 0, h: ${d / 4 * Math.tan(30 * Math.PI / 180)}}).rotateY(180)`,
                             `).translate([${x}, ${y}, ${-h}])`
                         ];
+                        {
+                            if (d === 0 || h === 0) {
+                                report(`Parametry d i h nie mogą być równa 0. `);
+                                toRemove = 1;
+                                partParts = [];
+                                break;
+                            }
+                        }
                         modelParts.push(partParts.join(``));
                         partParts = [];
                     }
@@ -74,8 +100,15 @@ const functionsKostka = { // przygotowka must be defined
                         ];
                         {
                             if (y - 2 * r < 0 || x - 2 * r < 0) { // y < 2 * 4 || x < 2 * r
-                                console.log(`Kieszeń prostokątna o numerze ${przygotowka.kartaObrobki.listaObrobek.indexOf(i) + 1}: za duży promień zaokrąglenia. Obróbka nie została wykonana. `);
+                                report(`Kieszeń prostokątna: za duży promień zaokrąglenia. Obróbka nie została wykonana. `);
                                 toRemove = 1; // does nothing if importing an object, though cannot export objects that pass in this section
+                                partParts = [];
+                                break;
+                            }
+                            if (x === 0 || y === 0 || h === 0 || r === 0) {
+                                report(`Parametry x, y, h i r nie mogą być równe 0. `);
+                                toRemove = 1;
+                                partParts = [];
                                 break;
                             }
                             if (x - 2 * r === 0) {
@@ -96,28 +129,43 @@ const functionsKostka = { // przygotowka must be defined
                 case `kieszeń okrągła`:
                     {
                         let [x0, y0, r, h] = i.listaWymiarow;
+                        {
+                            if (r === 0 || h === 0) {
+                                report(`Parametry r i h nie mogą być równe 0. `);
+                                toRemove = 1;
+                                break;
+                            }
+                        }
                         modelParts.push(`cylinder({r: ${r}, h: ${h}}).translate([${x0}, ${y0}, ${-h}])`);
                     }
                     break;
-                case `rowek kołowy`: //                                                                                 !!!
+                case `rowek kołowy`:
                     {
                         let [x0, y0, R, l, h] = i.listaWymiarow;
                         partParts = [                                                               // Indexes:
                             `difference(`,                                                          // 0
-                                `cylinder({r: ${parseFloat(R) + parseFloat(l) / 2}, h: ${h}})`,     // 1
-                                `, `,                                                               // 2
-                                `cylinder({r: ${R - l / 2}, h: ${h}})`,                             // 3
-                            `).translate([${x0}, ${y0}, ${-h}])`                                    // 4
+                                `cylinder({r: ${parseFloat(R) + parseFloat(l) / 2}, h: ${h}}), `,   // 1
+                                `cylinder({r: ${R - l / 2}, h: ${h}})`,                             // 2
+                            `).translate([${x0}, ${y0}, ${-h}])`                                    // 3
                         ];
                         {
                             if (R - l / 2 < 0) { // R < l / 2
-                                console.log(`Rowek kołowy o numerze ${przygotowka.kartaObrobki.listaObrobek.indexOf(i) + 1}: promień ścieżki mniejszy od połowy jej szerokości, wykonanie niemożliwe ze względów geometrycznych. Obróbka nie została wykonana. `);
+                                report(`Rowek kołowy: promień ścieżki mniejszy od połowy jej szerokości, wykonanie niemożliwe ze względów geometrycznych. Obróbka nie została wykonana. `);
                                 toRemove = 1;
+                                partParts = [];
                                 break;
                             }
-                            if (R - l / 2 === 0) { // R === l / 2
-                                partParts[2] = ``;
-                                partParts[3] = ``;
+                            if (R - l / 2 === 0) {
+                                report(`R = 0.5l - wynikiem będzie kieszeń okrągła. Obróbka nie została wykonana. Proszę wybrać odpowiednią opcję. `);
+                                toRemove = 1;
+                                partParts = [];
+                                break;
+                            }
+                            if (R === 0 || l === 0 || h === 0) {
+                                report(`Parametry R, l i h nie mogą być równe 0. `);
+                                toRemove = 1;
+                                partParts = [];
+                                break;
                             }
                         } // conditions
                         modelParts.push(partParts.join(``));
@@ -125,7 +173,7 @@ const functionsKostka = { // przygotowka must be defined
                     }
                     break;
                 default:
-                    console.log(`Obróbki nie istnieje. `);
+                    report(`Obróbkę nie rozpoznano: ${przygotowka.kartaObrobki.listaObrobek.indexOf(i) + 1}. "${i.nazwa}". `);
                     break;
             }
         }
@@ -158,7 +206,7 @@ const functionsKostka = { // przygotowka must be defined
                 modelParts.push(`kod innej obróbki`);
                 break;
             default:
-                console.log(`Obróbki nie istnieje. `);
+                report(`Obróbki nie istnieje. `);
                 break;
         }
     }*/
@@ -167,38 +215,153 @@ const functionsWalec = {
     generateCodeFromScratch: function() {
         modelParts = [];
         let [srednica, dlugosc] = przygotowka.listaWymiarow;
-        modelParts.push(`cylinder({r: ${srednica / 2}, h: ${dlugosc}}).rotateX(-90)`);
-        originModel = `drawOrigin([[${srednica / 2}, 0, 0], [0, ${srednica / 2}, 0], [0, 0, 0]]).rotateX(90), `;
+        {
+            if (srednica === 0 || dlugosc === 0) {
+                report(`Wymiary nie mogą być równe 0. `);
+                przygotowka = {};
+                etapPrzygotowki();
+                return;
+            }
+        } // conditions
+        modelParts.push(`cylinder({r: ${srednica / 2}, h: ${dlugosc}})`);
+        originModel = `drawOrigin([[${srednica / 2}, 0, 0], [0, ${srednica / 2}, 0], [0, 0, 0]]).rotateX(180), `;
         for (let i of przygotowka.kartaObrobki.listaObrobek) {
             switch (i.nazwa) {
-                case `toczenie wzdłużne`:
+                case `toczenie`:
                     {
-                        let [d0, d, h] = i.listaWymiarow;
+                        let [d0, d, h0, h] = i.listaWymiarow;
                         partParts = [
                             `difference(`,
-                                `cylinder({r: ${d0 / 2}, h: ${h}}), `,
+                                `cylinder({r: ${d0 / 2}, h: ${h}})`,
+                                `, `,
                                 `cylinder({r: ${d / 2}, h: ${h}})`,
-                            `).rotateX(-90)`
+                            `).translate([0, 0, ${h0}])`
                         ];
+                        {
+                            if (d === '0') {
+                                //partParts.splice(2, 2);
+                                partParts[2] = ``;
+                                partParts[3] = ``;
+                            }
+                            if (d >= d0) {
+                                report(`Średnica początkowa nie może być mniejsza lub równa końcowej. `);
+                                toRemove = 1;
+                                partParts = [];
+                                break;
+                            }
+                            if (d0 === '0' || h === '0') {
+                                report(`Parametry d0 i h nie mogą być równe 0. `);
+                                toRemove = 1;
+                                partParts = [];
+                                break;
+                            }
+                        } // conditions
                         modelParts.push(partParts.join(``));
                         partParts = [];
                     }
                     break;
                 case `otwór`:
-                {
-                    let [d, h] = i.listaWymiarow;
-                    partParts = [
-                        `union(`,
-                            `cylinder({r: ${d / 2}, h: ${h}}), `,
-                            `cylinder({r1: ${d / 2}, r2: 0, h: ${d / 4 * Math.tan(30 * Math.PI / 180)}}).translate([0, 0, ${h}])`,
-                        `).rotateX(-90)`
-                    ];
-                    modelParts.push(partParts.join(``));
-                    partParts = [];
-                }
+                    {
+                        let [h0, h, d] = i.listaWymiarow;
+                        partParts = [
+                            `union(`,
+                                `cylinder({r: ${d / 2}, h: ${h}}), `,
+                                `cylinder({r1: ${d / 2}, r2: 0, h: ${d / 4 * Math.tan(30 * Math.PI / 180)}}).translate([0, 0, ${h}])`,
+                            `).translate([0, 0, ${h0}])`
+                        ];
+                        {
+                            if (d === '0' || h === '0') {
+                                report(`Parametry d i h nie mogą być równe 0. `);
+                                toRemove = 1;
+                                break;
+                            }
+                        }
+                        modelParts.push(partParts.join(``));
+                        partParts = [];
+                    }
+                    break;
+                case `fazowanie zewnętrzne`:
+                    {
+                        let [d, h, h0] = i.listaWymiarow;
+                        partParts = [ // возможно стоит поменять местами 1 и 2
+                            `difference(`,
+                                `cylinder({r: ${d / 2}, h: ${h}}), `,
+                                `cylinder({r1: ${d / 2}, r2: 0, h: ${d / 2}}).rotateX(180).translate([0, 0, ${h}])`,
+                            `).translate([0, 0, ${h0}])`
+                        ];
+                        {
+                            if (d === '0' || h === '0') {
+                                report(`Parametry d i h nie mogą być równe 0. `);
+                                toRemove = 1;
+                                break;
+                            }
+                        }
+                        modelParts.push(partParts.join(``));
+                        partParts = [];
+                    }
+                    break;
+                case `fazowanie wewnętrzne`:
+                    {
+                        let [d, h, h0] = i.listaWymiarow;
+                        partParts = [
+                            `intersection(`,
+                                `cylinder({r: ${(parseFloat(d) / 2 + parseFloat(h))}, h: ${h}}),`,
+                                `cylinder({r1: ${(parseFloat(d) / 2 + parseFloat(h))}, r2: 0, h: ${(parseFloat(d) / 2 + parseFloat(h))}})`,
+                            `).translate([0, 0, ${h0}])`
+                        ];
+                        {
+                            if (d === 0 || h === 0) {
+                                report(`Parametry d i h nie mogą być równe 0. `);
+                                toRemove = 1;
+                                break;
+                            }
+                        }
+                        modelParts.push(partParts.join(``));
+                        partParts = [];
+                    }
+                    break;
+                case `rowek wzdłużny`:
+                    {
+                        let [d0, d, h0, h] = i.listaWymiarow;
+                        partParts = [
+                            `difference(`,
+                                `cylinder({r: ${d / 2}, h: ${h}}), `,
+                                `cylinder({r: ${d0 / 2}, h: ${h}})`,
+                            `).translate([0, 0, ${h0}])`
+                        ];
+                        {
+                            if (d0 === 0 || h === 0) {
+                                report(`Parametry d0 i h nie mogą być równe 0. `);
+                                toRemove = 1;
+                                break;
+                            }
+                        }
+                        modelParts.push(partParts.join(``));
+                        partParts = [];
+                    }
+                    break;
+                case `rowek czołowy`:
+                    {
+                        let [d0, d, h0, h] = i.listaWymiarow;
+                        partParts = [
+                            `difference(`,
+                                `cylinder({r: ${d0 / 2}, h: ${h}}), `,
+                                `cylinder({r: ${d / 2}, h: ${h}})`,
+                            `).translate([0, 0, ${h0}])`
+                        ];
+                        {
+                            if (d0 === 0 || h === 0) {
+                                report(`Parametry d0 i h nie mogą być równe 0. `);
+                                toRemove = 1;
+                                break;
+                            }
+                        }
+                        modelParts.push(partParts.join(``));
+                        partParts = [];
+                    }
                     break;
                 default:
-                    console.log(`Obróbki nie istnieje. `);
+                    report(`Obróbkę nie rozpoznano: ${przygotowka.kartaObrobki.listaObrobek.indexOf(i) + 1}. "${i.nazwa}". `);
                     break;
             }
         }
@@ -206,12 +369,64 @@ const functionsWalec = {
         codeParts[1] = originModel;
         mainModel = modelParts.join(`, `);
         codeParts[3] = mainModel; // manipulates with model, not function. Adds coma to model.
-        centering = `.translate([0, ${-dlugosc / 2}, 0])`;
+        centering = `.rotateX(-90).translate([0, ${-dlugosc / 2}, 0])`;
         codeParts[5] = centering;
         code = codeParts.join(``); // manipulates with function, not model. Doesn't add coma to function.
     },
     generateGCode: function() {
         // odczytac wymiary przygotowki, wpisac do kodu. switch do obrobek, tworzenie kodu, zapisywanie itd. Tak samo jak z kodem do OpenJSCAD, ale w kodzie G.
+        if (Object.keys(przygotowka).length === 0 || przygotowka.listaWymiarow[0] === undefined || przygotowka.kartaObrobki.listaObrobek[0] === undefined || przygotowka.kartaObrobki.listaObrobek[0].listaWymiarow[0] === undefined) {
+            report(`Próba wygenerować kod G. Model pusty. `);
+            return;
+        }
+        let gkod = ``;
+        for (let i of przygotowka.kartaObrobki.listaObrobek) {
+            switch (i) {
+                case `toczenie`:
+                    {
+                        let [d0, d, h0, h] = i.listaWymiarow;
+
+                    }
+                    break;
+                case `otwór`:
+                    {
+                        let [d, h] = i.listaWymiarow;
+
+                    }
+                    break;
+                case `fazowanie zewnętrzne`:
+                    {
+                        let [d, h, h0] = i.listaWymiarow;
+
+                    }
+                    break;
+                case `fazowanie wewnętrzne`:
+                    {
+                        let [d, h, h0] = i.listaWymiarow;
+
+                    }
+                    break;
+                case `rowek wzdłużny`:
+                    {
+                        let [d0, d, h0, h] = i.listaWymiarow;
+
+                    }
+                    break;
+                case `rowek czołowy`:
+                    {
+                        let [d0, d, h0, h] = i.listaWymiarow;
+
+                    }
+                    break;
+                default:
+                    report(`Obróbkę nie rozpoznano: ${przygotowka.kartaObrobki.listaObrobek.indexOf(i) + 1}. "${i.nazwa}". `);
+                    break;
+            }
+        }
+        let a = document.createElement('a');
+        a.href = "data:application/octet-stream,"+encodeURIComponent(gkod);
+        a.download = `g-code ${przygotowka.nazwa} (${dateTimeFormat(1)}).txt`;
+        a.click();
     },
 };
 let prepareCode = {}; // functions for generating OpenJSCAD code are stored here in the form of methods. Becomes one of two objects with same methods for different code-writing purposes depending on przygotowka
@@ -219,14 +434,14 @@ function setFunctions() {
     switch (przygotowka.nazwa) {
         case `kostka`:
             prepareCode = { ...functionsKostka };
-            console.log(`Ustawiono funkcje dla kostki. `);
+            report(`Ustawiono funkcje dla kostki. `);
             break;
         case `walec`:
             prepareCode = { ...functionsWalec };
-            console.log(`Ustawiono funkcje dla walca. `);
+            report(`Ustawiono funkcje dla walca. `);
             break;
         default:
-            console.log(`Nie ustalono przygotówki. `);
+            report(`Nie ustalono przygotówki. `);
             break;
     }
 }
@@ -307,38 +522,20 @@ function proceed(obj) {
     }
     drawModel();
 }
-function verifyInput(type) { // вставить его в процессИнпут, в импорте не нужен потому, что экспортировать незаполненный обьект неполучится, если эта функция будет в процессИнпут
-    switch (type) { // in-code use only
-        case 1: // verifies HTML input field
-            for (let i = 0; i < elements.inputs.length; i++) {
-                if (typeof(elements.inputs[i]) !== 'number' || elements.inputs[i] <= 0) {
-                    console.log(`Wymiary muszą być w postaci dodatnich liczb. `);
-                    console.log(elements.inputs);
-                    // вернуться к заполнению
-                    break;
-                }
-            }
+function verifyInput() { // вставить его в процессИнпут или в проксид, в общем только в эту область (сразу после создания обьекта)
+    for (let i = 0; i < elements.inputs.length; i++) {
+        if (typeof(elements.inputs[i]) !== 'number' || elements.inputs[i] <= 0) {
+            report(`Wymiary muszą być w postaci dodatnich liczb. `);
+            report(elements.inputs);
+            // вернуться к заполнению
             break;
-        case 2: // verifies all objects
-
-            for (let i of przygotowka.listaWymiarow) {
-                if (typeof(i) !== 'number' || i <= 0) {
-                    console.log(`Wymiary muszą być w postaci dodatnich liczb. `);
-                    console.log(przygotowka.listaWymiarow);
-
-                    // вернуться к заполнению, на один из двух этапов, но не на первые их шаги
-
-                    // uploadHistory();
-                    break;
-                }
-            }
-            break;
-        default:
-            console.log(`[in-code error] bad verifyInput "type" parameter `);
-            break;
+        }
     }
     // следующий шаг
-} // инпут может быть нулевой, если касается координат. Проверять не ноль ли инпут только для тех, для которых реально нельзя, и делать это тогда не в processInput, а где-то в другом месте
+}
+function report(msg) {
+    elements.console_log.innerHTML += `<li>${msg} [${dateTimeFormat(2)}]</li>`;
+}
 /*
 function store() {
     if (przygotowka === {} || listaPrzygotowek.forEach(p => przygotowka === p)) {
@@ -394,6 +591,13 @@ function etapObrobki() {
 function bindListeners() {
     // Class "header":
     elements.btnStart.addEventListener('click', etapPrzygotowki);
+    elements.btnGenerateGCode.addEventListener('click', function() {
+        prepareCode.generateGCode();
+        //code = m3;
+        //drawModel();
+    });
+    elements.btnExport.addEventListener('click', exportObject);
+    elements.inputFile.addEventListener('change', importObject);
     // Class "viewsList":
     /*
     for (let i = 0; i < elements.views.length; i++) {
@@ -401,14 +605,6 @@ function bindListeners() {
     }
     */
     // Class "footer":
-    elements.btnGenerateGCode.addEventListener('click', function () {
-       code = m3;
-       drawModel();
-    });
-    elements.btnExport.addEventListener('click', () => {
-        exportObject();
-    });
-    elements.inputFile.addEventListener('change', importObject);
 }
     // document.addEventListener("DOMContentLoaded", function() {
 bindListeners();
@@ -417,12 +613,12 @@ bindListeners();
 // Exports and imports:
 function exportObject() {
     if (Object.keys(przygotowka).length === 0 || przygotowka.listaWymiarow[0] === undefined) {
-        console.log(`Model pusty. `);
+        report(`Próba eksportować model. Model pusty. `);
         return;
     }
     let a = document.createElement('a');
     a.href = "data:application/octet-stream,"+encodeURIComponent(JSON.stringify(przygotowka));
-    a.download = `${przygotowka.nazwa} ${dateTimeFormat1()}.txt`;
+    a.download = `${przygotowka.nazwa} (${dateTimeFormat(1)}).txt`;
     a.click();
 }
 function importObject(event) {
@@ -435,12 +631,12 @@ function importObject(event) {
     }
     setTimeout(() => { // waiting for promise, not for parse (yes, they are asynchronous)
         if (Object.keys(przygotowka).length === 0) {
-            console.log('Plik pusty. ');
+            report('Próba importować model. Plik pusty. ');
             code = ``;
             drawModel();
             return;
         }
-        console.log(`Przygotówkę załadowano. `);
+        report(`Przygotówkę załadowano. `);
         uploadHistory();
         setFunctions();
         prepareCode.generateCodeFromScratch();
@@ -453,7 +649,7 @@ function importObject(event) {
                 przygotowka.kartaObrobki.dostepneObrobki = walec.kartaObrobki.dostepneObrobki;
                 break;
             default:
-                console.log(`Przygotówkę nie rozpoznano. `);
+                report(`Przygotówkę nie rozpoznano: "${przygotowka.nazwa}". `);
                 break;
         }
         etapObrobki();
@@ -465,11 +661,14 @@ function parseFileContent(file) {
         /* there will be an error in condition; also should be a type and version checker of all przygotowka objects
         if (przygotowka.displayInfo() !== dostepnePrzygotowki[0].displayInfo()) {
             przygotowka = {};
-            console.log(`Nieprawidłowy format importowanego pliku.
+            report(`Nieprawidłowy format importowanego pliku.
 Akceptowalny format: ${dostepnePrzygotowki[0].displayInfo()}
 Format wgranego pliku: ${przygotowka.displayInfo()}`);
         }*/
-    }).catch(error => console.log(error));
+    }).catch(error => {
+        console.log(error);
+        report(`Błąd odczytu pliku. `);
+    });
     // сделать потом через промисы и отдать в then после выполнения этой функции в предыдущей
 }
 function readFileContent(file) {
@@ -489,11 +688,13 @@ function uploadHistory() {
         modifyHTML(elements.history, `<li>${i + 1}. ${przygotowka.kartaObrobki.listaObrobek[i].nazwa}</li>`);
     }
     for (let e of elements.points) {
-        e.addEventListener('click', () => {
-            console.log(this);
-        });
+        e.addEventListener('click', catchFromHistory);
     }
 }
+function catchFromHistory() {
+    console.log(this);
+}
+/*
 function updateHistory(obj) {
     switch (obj) {
         case przygotowka: // called only once so might want to rewrite this without switching every time
@@ -505,9 +706,11 @@ function updateHistory(obj) {
         default:
             console.log(`[in-code error] bad updateHistory "obj" parameter: `);
             console.log(obj);
+            report(`Błąd przy modyfikacji historii. `);
             return;
     }
     elements.points[elements.points.length - 1].addEventListener('click', () => {
         console.log(this);
     });
 }
+*/

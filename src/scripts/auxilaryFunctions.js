@@ -45,7 +45,8 @@ export function generateGCode(przygotowka) {
 }
 */
 
-export function dateTimeFormat1() {
+export function dateTimeFormat(n) {
+
     let _year = new Date().getFullYear();
     let _month = new Date().getMonth();
     let _day = new Date().getDate();
@@ -53,14 +54,32 @@ export function dateTimeFormat1() {
     let _minutes = new Date().getMinutes();
     let _seconds = new Date().getSeconds();
 
-    let dateTimeArray = [];
-    [_year, _month, _day, _hours, _minutes, _seconds].forEach(e => dateTimeArray.push(`${e}`));
-
-    for (let i = 0; i < dateTimeArray.length; i++) {
-        if (dateTimeArray[i].length < 2 && dateTimeArray[i] !== `${_year}`) {
-            dateTimeArray[i] = `0${dateTimeArray[i]}`;
-        }
+    switch(n) {
+        case 1:
+            {
+                let dateTimeArray = [];
+                [_year, _month, _day, _hours, _minutes, _seconds].forEach(e => dateTimeArray.push(`${e}`));
+                doIt(dateTimeArray);
+                return `${dateTimeArray[0]}-${dateTimeArray[1]}-${dateTimeArray[2]}, ${dateTimeArray[3]}-${dateTimeArray[4]}-${dateTimeArray[5]}`;
+            }
+        case 2:
+            {
+                let dateTimeArray = [];
+                [_hours, _minutes, _seconds].forEach(e => dateTimeArray.push(`${e}`));
+                doIt(dateTimeArray);
+                return `${dateTimeArray[0]}:${dateTimeArray[1]}:${dateTimeArray[2]}`;
+            }
+        default:
+            console.log(`[in-code error] bad dateTimeFormat "n" parameter: `);
+            console.log(n);
+            return `error`;
     }
 
-    return `(${dateTimeArray[0]}-${dateTimeArray[1]}-${dateTimeArray[2]}, ${dateTimeArray[3]}-${dateTimeArray[4]}-${dateTimeArray[5]})`;
+    function doIt(dateTimeArray) {
+        for (let i = 0; i < dateTimeArray.length; i++) {
+            if (dateTimeArray[i].length < 2 && dateTimeArray[i] !== `${_year}`) {
+                dateTimeArray[i] = `0${dateTimeArray[i]}`;
+            }
+        }
+    }
 }

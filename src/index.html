@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wizard</title>
+    <title>Moja gwarancja zaliczenia pracy dyplomowej, szczyt inżynierskiej genialności</title>
 </head>
 <body>
 
@@ -12,6 +12,12 @@
     <!-- Header: -->
     <div class="header">
         <button id="btnStart">Rozpocznij</button>
+        <button id="btnGenerateGCode">Wygenerować kog G</button>
+        <span id="export-import">
+            <button id="btnExport">Eksportować</button>
+            <label for="input-file">Importować:</label>
+            <input type="file" id="input-file">
+        </span>
         <!--<ul id="openedFiles"></ul>-->
         <!--<span id="perspective"></span>-->
         <!--<span id="drawing"></span>-->
@@ -42,10 +48,7 @@
     </div>
     <!-- Footer: -->
     <div class="footer">
-        <button id="btnGenerateGCode">Experimental</button>
-        <button id="btnExport">Export</button>
-        <label for="input-file">Import:</label>
-        <input type="file" id="input-file">
+        <ul class="footer" id="console-log"></ul>
     </div>
 </div>
 </body>
