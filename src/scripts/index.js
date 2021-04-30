@@ -34,28 +34,42 @@ function main() {
 }
 `, originFunction]; // here code for figures is stored with the functional code
 let code = ``; // = codeParts.join(``) here all code is united, final entity
-const functionsKostka = { // przygotowka must be defined
+let gkodModelPartsParts = [];
+let gkodModelParts = [];
+let gkodModel = ``;
+let gkodParts = [`
+    ; Kod wygenerowano automatycznie w aplikacji, stanowiacej podstawe pracy dyplomowej.
+    ;
+    ; G94/G95 - okreslenie trybu programowania posuwu. Posuwy nalezy wpisac recznie
+    G00 Z100 X100 ; dojazd w pozycje zmiany narzedzia
+    ; Txxxx - wybor narzedzia z odpowiednim korektorem
+    ; G96/G97 Sxxxx - okreslenie trybu i predkosci obracania wrzeciona
+    ; M3/M4 - wlaczenie obrotow prawych
+    ; M8 - wlaczenie chlodziwa`,
+    gkodModel,
+    `M30 ; koniec programu, wylaczenie obrotow wrzeciona`];
+let gkod = ``;
+const functionsKostka = {
     generateCodeFromScratch: function() {
         modelParts = [];
         let [szerokosc, dlugosc, wysokosc] = przygotowka.listaWymiarow;
         {
-            if (szerokosc === 0 || dlugosc === 0 || wysokosc === 0) {
+            if (szerokosc === '0' || dlugosc === '0' || wysokosc === '0') {
                 report(`Wymiary nie mogą być równe 0. `);
                 przygotowka = {};
                 etapPrzygotowki();
                 return;
             }
         } // conditions
-        modelParts.push(`cube({size: [${szerokosc}, ${dlugosc}, ${wysokosc}]}).translate([0, 0, ${-wysokosc}])`); // origin at top plane, centered
-        //originModel = `drawOrigin([[0, 0, 1], [0, 0, 1], [0, 0, 1]]), `;
+        modelParts.push(`cube({size: [${szerokosc}, ${dlugosc}, ${wysokosc}]}).translate([0, 0, ${-wysokosc}])`);
         originModel = `drawOrigin([[${szerokosc}, 0, 0], [0, ${dlugosc}, 0], [0, 0, 0]]), `;
         for (let i of przygotowka.kartaObrobki.listaObrobek) {
             switch (i.nazwa) {
-                case `czoło`: // PO OBROBCE CZOLA ZMIENIA SIE GLEBOKOSC!
+                case `czoło`:
                     {
                         let [h] = i.listaWymiarow;
                         {
-                            if (h === 0) {
+                            if (h === '0') {
                                 report(`Parametr h nie może być równy 0. `);
                                 toRemove = 1;
                                 break;
@@ -74,7 +88,7 @@ const functionsKostka = { // przygotowka must be defined
                             `).translate([${x}, ${y}, ${-h}])`
                         ];
                         {
-                            if (d === 0 || h === 0) {
+                            if (d === '0' || h === '0') {
                                 report(`Parametry d i h nie mogą być równa 0. `);
                                 toRemove = 1;
                                 partParts = [];
@@ -99,13 +113,13 @@ const functionsKostka = { // przygotowka must be defined
                             `).translate([${x0}, ${y0}, ${-h}])`                                        // 7
                         ];
                         {
-                            if (y - 2 * r < 0 || x - 2 * r < 0) { // y < 2 * 4 || x < 2 * r
-                                report(`Kieszeń prostokątna: za duży promień zaokrąglenia. Obróbka nie została wykonana. `);
-                                toRemove = 1; // does nothing if importing an object, though cannot export objects that pass in this section
+                            if (y - 2 * r < 0 || x - 2 * r < 0) {
+                                report(`Za duży promień zaokrąglenia. Obróbka nie została wykonana. `);
+                                toRemove = 1; // does nothing if importing an object (which is bad), THOUGH - cannot export objects that pass in this section
                                 partParts = [];
                                 break;
                             }
-                            if (x === 0 || y === 0 || h === 0 || r === 0) {
+                            if (x === '0' || y === '0' || h === '0' || r === '0') {
                                 report(`Parametry x, y, h i r nie mogą być równe 0. `);
                                 toRemove = 1;
                                 partParts = [];
@@ -113,7 +127,7 @@ const functionsKostka = { // przygotowka must be defined
                             }
                             if (x - 2 * r === 0) {
                                 partParts[1] = ``;
-                                partParts[3] = ``; // cylinders are overlapping
+                                partParts[3] = ``;
                                 partParts[4] = ``;
                             }
                             if (y - 2 * r === 0) {
@@ -130,7 +144,7 @@ const functionsKostka = { // przygotowka must be defined
                     {
                         let [x0, y0, r, h] = i.listaWymiarow;
                         {
-                            if (r === 0 || h === 0) {
+                            if (r === '0' || h === '0') {
                                 report(`Parametry r i h nie mogą być równe 0. `);
                                 toRemove = 1;
                                 break;
@@ -161,7 +175,7 @@ const functionsKostka = { // przygotowka must be defined
                                 partParts = [];
                                 break;
                             }
-                            if (R === 0 || l === 0 || h === 0) {
+                            if (R === '0' || l === '0' || h === '0') {
                                 report(`Parametry R, l i h nie mogą być równe 0. `);
                                 toRemove = 1;
                                 partParts = [];
@@ -186,37 +200,15 @@ const functionsKostka = { // przygotowka must be defined
         code = codeParts.join(``); // manipulates with function, not model. Doesn't add coma to function.
     },
     generateGCode: function() {
-        // odczytac wymiary przygotowki, wpisac do kodu. switch do obrobek, tworzenie kodu, zapisywanie itd. Tak samo jak z kodem do OpenJSCAD, ale w kodzie G.
-    },
-    /*
-    // not going to use this yet:
-    clearCode: function() {
-        modelParts = [];
-    },
-    generatePrzygotowkaCode: function() {
-        modelParts.push(`cube({size: [${przygotowka.listaWymiarow[0]}, ${przygotowka.listaWymiarow[1]}, ${przygotowka.listaWymiarow[2]}]}).translate([-${przygotowka.listaWymiarow[0]/2}, -${przygotowka.listaWymiarow[1]/2}, -${przygotowka.listaWymiarow[2]}])`); // origin at top plane, centered
-        modelParts.push(`//`); // comment at the end of the line, no obróbka will be inserted
-    },
-    generateObrobkaCode: function() {
-        switch (przygotowka.kartaObrobki.listaObrobek[length]) {
-            case otworKostka:
-                modelParts.push(`kod otworu`);
-                break;
-            case `inna obróbka`:
-                modelParts.push(`kod innej obróbki`);
-                break;
-            default:
-                report(`Obróbki nie istnieje. `);
-                break;
-        }
-    }*/
+        report(`Generowanie kodu G dostępne jedynie dla walca. `);
+    }
 };
 const functionsWalec = {
     generateCodeFromScratch: function() {
         modelParts = [];
         let [srednica, dlugosc] = przygotowka.listaWymiarow;
         {
-            if (srednica === 0 || dlugosc === 0) {
+            if (srednica === '0' || dlugosc === '0') {
                 report(`Wymiary nie mogą być równe 0. `);
                 przygotowka = {};
                 etapPrzygotowki();
@@ -243,10 +235,9 @@ const functionsWalec = {
                                 partParts[2] = ``;
                                 partParts[3] = ``;
                             }
-                            if (d >= d0) {
-                                report(`Średnica początkowa nie może być mniejsza lub równa końcowej. `);
+                            if (d0 > d || d === d0) {
+                                report(`Średnica końcowa nie może być większa lub równa początkowej. `);
                                 toRemove = 1;
-                                partParts = [];
                                 break;
                             }
                             if (d0 === '0' || h === '0') {
@@ -283,7 +274,7 @@ const functionsWalec = {
                 case `fazowanie zewnętrzne`:
                     {
                         let [d, h, h0] = i.listaWymiarow;
-                        partParts = [ // возможно стоит поменять местами 1 и 2
+                        partParts = [
                             `difference(`,
                                 `cylinder({r: ${d / 2}, h: ${h}}), `,
                                 `cylinder({r1: ${d / 2}, r2: 0, h: ${d / 2}}).rotateX(180).translate([0, 0, ${h}])`,
@@ -292,6 +283,11 @@ const functionsWalec = {
                         {
                             if (d === '0' || h === '0') {
                                 report(`Parametry d i h nie mogą być równe 0. `);
+                                toRemove = 1;
+                                break;
+                            }
+                            if (d / 2 < h) {
+                                report(`Parametr h nie może być większy od połowy średnicy. Proszę zastosować toczenie. `);
                                 toRemove = 1;
                                 break;
                             }
@@ -305,12 +301,12 @@ const functionsWalec = {
                         let [d, h, h0] = i.listaWymiarow;
                         partParts = [
                             `intersection(`,
-                                `cylinder({r: ${(parseFloat(d) / 2 + parseFloat(h))}, h: ${h}}),`,
+                                `cylinder({r: ${(parseFloat(d) / 2 + parseFloat(h))}, h: ${h}}), `,
                                 `cylinder({r1: ${(parseFloat(d) / 2 + parseFloat(h))}, r2: 0, h: ${(parseFloat(d) / 2 + parseFloat(h))}})`,
                             `).translate([0, 0, ${h0}])`
                         ];
                         {
-                            if (d === 0 || h === 0) {
+                            if (d === '0' || h === '0') {
                                 report(`Parametry d i h nie mogą być równe 0. `);
                                 toRemove = 1;
                                 break;
@@ -325,13 +321,18 @@ const functionsWalec = {
                         let [d0, d, h0, h] = i.listaWymiarow;
                         partParts = [
                             `difference(`,
-                                `cylinder({r: ${d / 2}, h: ${h}}), `,
-                                `cylinder({r: ${d0 / 2}, h: ${h}})`,
+                                `cylinder({r: ${d0 / 2}, h: ${h}}), `,
+                                `cylinder({r: ${d / 2}, h: ${h}})`,
                             `).translate([0, 0, ${h0}])`
                         ];
                         {
-                            if (d0 === 0 || h === 0) {
+                            if (d0 === '0' || h === '0') {
                                 report(`Parametry d0 i h nie mogą być równe 0. `);
+                                toRemove = 1;
+                                break;
+                            }
+                            if (d0 > d || d === d0) { // nie wiem dlaczego, ale to działa tak, a nie d0 < d.
+                                report(`Średnica końcowa nie może być większa lub równa początkowej. `);
                                 toRemove = 1;
                                 break;
                             }
@@ -341,24 +342,29 @@ const functionsWalec = {
                     }
                     break;
                 case `rowek czołowy`:
+                {
+                    let [d0, d, h0, h] = i.listaWymiarow;
+                    partParts = [
+                        `difference(`,
+                        `cylinder({r: ${d0 / 2}, h: ${h}}), `,
+                        `cylinder({r: ${d / 2}, h: ${h}})`,
+                        `).translate([0, 0, ${h0}])`
+                    ];
                     {
-                        let [d0, d, h0, h] = i.listaWymiarow;
-                        partParts = [
-                            `difference(`,
-                                `cylinder({r: ${d0 / 2}, h: ${h}}), `,
-                                `cylinder({r: ${d / 2}, h: ${h}})`,
-                            `).translate([0, 0, ${h0}])`
-                        ];
-                        {
-                            if (d0 === 0 || h === 0) {
-                                report(`Parametry d0 i h nie mogą być równe 0. `);
-                                toRemove = 1;
-                                break;
-                            }
+                        if (d0 === '0' || h === '0') {
+                            report(`Parametry d0 i h nie mogą być równe 0. `);
+                            toRemove = 1;
+                            break;
                         }
-                        modelParts.push(partParts.join(``));
-                        partParts = [];
+                        if (d0 < d || d === d0) {
+                            report(`Średnica końcowa nie może być większa lub równa początkowej. `);
+                            toRemove = 1;
+                            break;
+                        }
                     }
+                    modelParts.push(partParts.join(``));
+                    partParts = [];
+                }
                     break;
                 default:
                     report(`Obróbkę nie rozpoznano: ${przygotowka.kartaObrobki.listaObrobek.indexOf(i) + 1}. "${i.nazwa}". `);
@@ -374,48 +380,62 @@ const functionsWalec = {
         code = codeParts.join(``); // manipulates with function, not model. Doesn't add coma to function.
     },
     generateGCode: function() {
-        // odczytac wymiary przygotowki, wpisac do kodu. switch do obrobek, tworzenie kodu, zapisywanie itd. Tak samo jak z kodem do OpenJSCAD, ale w kodzie G.
         if (Object.keys(przygotowka).length === 0 || przygotowka.listaWymiarow[0] === undefined || przygotowka.kartaObrobki.listaObrobek[0] === undefined || przygotowka.kartaObrobki.listaObrobek[0].listaWymiarow[0] === undefined) {
             report(`Próba wygenerować kod G. Model pusty. `);
             return;
         }
-        let gkod = ``;
+        gkodModelParts = [];
+        let [srednica, dlugosc] = przygotowka.listaWymiarow;
         for (let i of przygotowka.kartaObrobki.listaObrobek) {
             switch (i) {
                 case `toczenie`:
                     {
-                        let [d0, d, h0, h] = i.listaWymiarow;
-
+                        let [d0, d, h0, h, dx] = i.listaWymiarow;
+                        /*
+                        gkodModelPartsParts = [
+                            `; Txxxx
+                            G00 Z01 X${parseFloat(srednica) + 2}
+                            `,
+                            `G00 Z${- parseFloat(h0) + 1}
+                            G90 U${dx} W${- parseFloat(h) + 1}
+                            `,
+                            `G01 `,
+                            ``
+                        ];
+                        gkodModelParts.push(gkodModelPartsParts.join(``));
+                        gkodModelPartsParts = [];
+                        */
+                        gkodModelParts.push(`; kod toczenia`);
                     }
                     break;
                 case `otwór`:
                     {
                         let [d, h] = i.listaWymiarow;
-
+                        gkodModelParts.push(`; kod wiercenia otworu`);
                     }
                     break;
                 case `fazowanie zewnętrzne`:
                     {
                         let [d, h, h0] = i.listaWymiarow;
-
+                        gkodModelParts.push(`; kod fazowania zewnetrznego`);
                     }
                     break;
                 case `fazowanie wewnętrzne`:
                     {
                         let [d, h, h0] = i.listaWymiarow;
-
+                        gkodModelParts.push(`; kod fazowania wewnetrznego`);
                     }
                     break;
                 case `rowek wzdłużny`:
                     {
                         let [d0, d, h0, h] = i.listaWymiarow;
-
+                        gkodModelParts.push(`; kod toczenia rowka wzdluznego`);
                     }
                     break;
                 case `rowek czołowy`:
                     {
                         let [d0, d, h0, h] = i.listaWymiarow;
-
+                        gkodModelParts.push(`; kod toczenia rowka czolowego`);
                     }
                     break;
                 default:
@@ -423,6 +443,11 @@ const functionsWalec = {
                     break;
             }
         }
+        gkodModel = gkodModelParts.join(`
+        `);
+        gkodParts[1] = gkodModel;
+        gkod = gkodParts.join(`
+        `);
         let a = document.createElement('a');
         a.href = "data:application/octet-stream,"+encodeURIComponent(gkod);
         a.download = `g-code ${przygotowka.nazwa} (${dateTimeFormat(1)}).txt`;
@@ -680,20 +705,24 @@ function readFileContent(file) {
     })
 }
 
-// History section: (listeners do not work)
+// History section:
 function uploadHistory() {
     clearHTML(elements.history);
     modifyHTML(elements.history, `<li>${przygotowka.nazwa}</li>`);
     for (let i = 0; i < przygotowka.kartaObrobki.listaObrobek.length; i++) {
         modifyHTML(elements.history, `<li>${i + 1}. ${przygotowka.kartaObrobki.listaObrobek[i].nazwa}</li>`);
     }
+    /*
     for (let e of elements.points) {
         e.addEventListener('click', catchFromHistory);
     }
+    */
 }
+/*
 function catchFromHistory() {
     console.log(this);
 }
+*/
 /*
 function updateHistory(obj) {
     switch (obj) {

@@ -30,16 +30,6 @@ h - głębokość rowka. `,
     listaWymiarow: [],
     nazwyWymiarow: [`x0`, `y0`, `R`, `l`, `h`]
 };
-const czolo1 = {
-    nazwa: `czoło`,
-    opis: `Obróbka czoła. <br>
-Wymiary: <br>
-h - grubość warstwy do zdjęcia. <br>
-Grubość warstwy nie wlicza się do następujących obróbek, należy podawać wartości uwzględniając obróbkę czoła!`,
-
-    listaWymiarow: [],
-    nazwyWymiarow: [`h`]
-};
 const kieszenOkragla1 = {
     nazwa: `kieszeń okrągła`,
     opis: `Kieszeń okrągła. <br>
@@ -74,6 +64,16 @@ Stożek o kącie 120 stopni. `,
 
     listaWymiarow: [],
     nazwyWymiarow: [`x`, `y`, `d`, `h`]
+};
+const czolo1 = {
+    nazwa: `czoło`,
+    opis: `Obróbka czoła. <br>
+Wymiary: <br>
+h - grubość warstwy do zdjęcia. <br>
+UWAGA! Grubość warstwy nie wlicza się do następujących obróbek, należy podawać wartości uwzględniając obróbkę czoła!`,
+
+    listaWymiarow: [],
+    nazwyWymiarow: [`h`]
 };
 export const kostka = {
     nazwa: `kostka`,

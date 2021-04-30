@@ -31,7 +31,7 @@ h - szerokość rowka.`,
 };
 let fazaWewn1 = {
     nazwa: `fazowanie wewnętrzne`,
-    opis: `Fazowanie zewnętrzne pod kątem 45 stopni. <br>
+    opis: `Fazowanie wewnętrzne pod kątem 45 stopni. <br>
 d - średnica (mniejsza); <br>
 h - długość fazy;  <br>
 h0 - początek fazy.`,
@@ -69,10 +69,12 @@ let toczenie1 = {
 d0 - średnica początkowa obróbki; <br>
 d - średnica końcowa; <br>
 h0 - początek drogi skrawania w osi Z; <br>
-h - długość drogi skrawania.`,
+h - długość drogi skrawania; <br>
+dx - głębokość jednego przejścia. <br>
+UWAGA! Grubość warstwy nie wlicza się do następujących obróbek, należy podawać wartości uwzględniając obróbkę czoła!`,
 
     listaWymiarow: [],
-    nazwyWymiarow: [`d0`, `d`, `h0`, `h`]
+    nazwyWymiarow: [`d0`, `d`, `h0`, `h`, `dx`]
 };
 export let walec = {
     nazwa: `walec`,
