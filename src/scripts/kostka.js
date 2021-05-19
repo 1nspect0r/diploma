@@ -4,18 +4,7 @@ let x = {
     opis: ``,
 
     listaWymiarow: [],
-    nazwyWymiarow: [``]
-};
-*/
-/*
-let frezowanieBoku1 = {
-    nazwa: `frezowanie boku`,
-    opis: `Frezowanie boku. <br>
-h - grubość warstwy do zdjęcia; <br>
-r - promień zaokrąglenia `, // to be continued
-
-    listaWymiarow: [],
-    nazwyWymiarow: [`h`, `r`]
+    nazwyWymiarow: ['']
 };
 */
 const rowekKolowy1 = {
@@ -28,7 +17,7 @@ l - szerokość rowka; <br>
 h - głębokość rowka. `,
 
     listaWymiarow: [],
-    nazwyWymiarow: [`x0`, `y0`, `R`, `l`, `h`]
+    nazwyWymiarow: ['x0', 'y0', 'R', 'l', 'h', 'średnica narzędzia', 'grubość przejścia']
 };
 const kieszenOkragla1 = {
     nazwa: `kieszeń okrągła`,
@@ -39,7 +28,7 @@ r - promień kieszeni; <br>
 h - głębokość kieszeni.` ,
 
     listaWymiarow: [],
-    nazwyWymiarow: [`x0`, `y0`, `r`, `h`]
+    nazwyWymiarow: ['x0', 'y0', 'r', 'h', 'średnica narzędzia', 'grubość przejścia']
 };
 const kieszenProstokatna1 = {
     nazwa: `kieszeń prostokątna`,
@@ -51,7 +40,7 @@ h - głębokość kieszeni; <br>
 r - promień zaokrąglenia naroża. `,
 
     listaWymiarow: [],
-    nazwyWymiarow: [`x0`, `y0`, `x`, `y`, `h`, `r`]
+    nazwyWymiarow: ['x0', 'y0', 'x', 'y', 'h', 'r', 'średnica narzędzia', 'grubość przejścia']
 };
 const otwor1 = {
     nazwa: `otwór`,
@@ -63,17 +52,17 @@ Oś otworu jest prostoliniowa do osi Z. <br>
 Stożek o kącie 120 stopni. `,
 
     listaWymiarow: [],
-    nazwyWymiarow: [`x`, `y`, `d`, `h`]
+    nazwyWymiarow: ['x', 'y', 'd', 'h']
 };
 const czolo1 = {
     nazwa: `czoło`,
     opis: `Obróbka czoła. <br>
 Wymiary: <br>
 h - grubość warstwy do zdjęcia. <br>
-UWAGA! Grubość warstwy nie wlicza się do następujących obróbek, należy podawać wartości uwzględniając obróbkę czoła!`,
+UWAGA! Przy modelowaniu należy uwzględniać grubość warstwy, jakby nie była zdjęta. Kod obróbki natomiast będzie uwzględniał wszystkie zmiany, oby zmniejszyć ilość ruchów roboczych poza przedmiotem obrabianym. `,
 
     listaWymiarow: [],
-    nazwyWymiarow: [`h`]
+    nazwyWymiarow: ['h', 'średnica narzędzia', 'grubość przejścia']
 };
 export const kostka = {
     nazwa: `kostka`,
@@ -87,6 +76,7 @@ Wysokość - wymiar w Z. `,
 
     kartaObrobki: {
         listaObrobek: [],
+        aktywne: [],
         dostepneObrobki: [czolo1, otwor1, kieszenProstokatna1, kieszenOkragla1, rowekKolowy1]
     }
 };

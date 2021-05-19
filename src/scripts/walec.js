@@ -86,6 +86,7 @@ export let walec = {
 
     kartaObrobki: {
         listaObrobek: [],
+        aktywne: [],
         dostepneObrobki: [toczenie1, otwor1, fazaZewn1, fazaWewn1, rowekWzdluzny1, rowekCzolowy1]
     }
 };

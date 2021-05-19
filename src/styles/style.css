@@ -58,6 +58,4 @@ body {
 .footer {
     position: relative;
     grid-column: 1 / 4;
-    list-style-type: none;
-    overflow: auto;
 }
