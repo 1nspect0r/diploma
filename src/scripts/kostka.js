@@ -12,12 +12,12 @@ const rowekKolowy1 = {
     opis: `Rowek kołowy. <br>
 Wymiary: <br>
 x0, y0 - współrzędne osi symetrii rowka; <br>
-R - promień ścieżki narzędzia; <br>
+R - promień środka rowka; <br>
 l - szerokość rowka; <br>
 h - głębokość rowka. `,
 
     listaWymiarow: [],
-    nazwyWymiarow: ['x0', 'y0', 'R', 'l', 'h', 'średnica narzędzia', 'grubość przejścia']
+    nazwyWymiarow: ['x0', 'y0', 'R', 'l', 'h', 'średnica narzędzia', 'grubość przejścia w Z']
 };
 const kieszenOkragla1 = {
     nazwa: `kieszeń okrągła`,
@@ -28,7 +28,7 @@ r - promień kieszeni; <br>
 h - głębokość kieszeni.` ,
 
     listaWymiarow: [],
-    nazwyWymiarow: ['x0', 'y0', 'r', 'h', 'średnica narzędzia', 'grubość przejścia']
+    nazwyWymiarow: ['x0', 'y0', 'r', 'h', 'średnica narzędzia', 'grubość przejścia w Z']
 };
 const kieszenProstokatna1 = {
     nazwa: `kieszeń prostokątna`,
@@ -40,7 +40,7 @@ h - głębokość kieszeni; <br>
 r - promień zaokrąglenia naroża. `,
 
     listaWymiarow: [],
-    nazwyWymiarow: ['x0', 'y0', 'x', 'y', 'h', 'r', 'średnica narzędzia', 'grubość przejścia']
+    nazwyWymiarow: ['x0', 'y0', 'x', 'y', 'h', 'r', 'grubość przejścia w Z']
 };
 const otwor1 = {
     nazwa: `otwór`,
@@ -62,7 +62,7 @@ h - grubość warstwy do zdjęcia. <br>
 UWAGA! Przy modelowaniu należy uwzględniać grubość warstwy, jakby nie była zdjęta. Kod obróbki natomiast będzie uwzględniał wszystkie zmiany, oby zmniejszyć ilość ruchów roboczych poza przedmiotem obrabianym. `,
 
     listaWymiarow: [],
-    nazwyWymiarow: ['h', 'średnica narzędzia', 'grubość przejścia']
+    nazwyWymiarow: ['h', 'średnica narzędzia', 'grubość przejścia w Z']
 };
 export const kostka = {
     nazwa: `kostka`,
