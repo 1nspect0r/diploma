@@ -346,24 +346,20 @@ const functionsKostka = {
 
                                 if (i <= iloscPrzejsc1 - 1) {
                                     gCodeMainParts2.push(`
-                                                                    G01 Z-${gruboscPrzejscia - offset2 + 1}
-                                    `);
+                                                                    G01 Z-${gruboscPrzejscia - offset2 + 1}`);
                                 } else {
                                     gCodeMainParts2.push(`
-                                                                    G01 Z-${calculateRemainder(gruboscWarstwy, gruboscPrzejscia) + 1}
-                                    `);
+                                                                    G01 Z-${calculateRemainder(gruboscWarstwy, gruboscPrzejscia) + 1}`);
                                 }
 
                                 for (let j = 1; j < iloscPrzejsc2; j++) { // j = 1 because the last line is out of this loop
                                     gCodeMainParts2.push(`
                                                                     X${znak * (szerokoscKostki + srednicaNarzedzia)}
-                                                                    Y${srednicaNarzedzia}
-                                    `);
+                                                                    Y${srednicaNarzedzia}`);
                                     znak *= -1;
                                 }
                                 gCodeMainParts2.push(`
-                                                                    X${znak * (szerokoscKostki + srednicaNarzedzia)}
-                                                            `);
+                                                                    X${znak * (szerokoscKostki + srednicaNarzedzia)}`);
 
                                 if (i <= iloscPrzejsc1 - 1) {
                                     if (znak === -1) {
@@ -1169,8 +1165,7 @@ function loadInput(clicked, loadOf, nextStep, previousStep) {
             <input type="text"></li>
         `);
     }
-    modifyHTML(elements.inputsList, `<button id="wstecz">Wstecz</button>`);
-    modifyHTML(elements.inputsList, `<button id="getInput">Zapisz</button>`);
+    modifyHTML(elements.inputsList, `<div class="header-1 d-md-flex justify-content-md-evenly"><button class="btn btn-outline-dark btn-sm" id="wstecz">Wstecz</button><button class="btn btn-outline-dark btn-sm" id="getInput">Zapisz</button></div>`);
     elements.wstecz = document.getElementById('wstecz');
     elements.getInput = document.getElementById('getInput');
     elements.wstecz.addEventListener('click', previousStep);
@@ -1236,7 +1231,7 @@ function proceed(obj) {
 }
 
 function report(msg) {
-    elements.console_log.innerHTML = `${msg} [${dateTimeFormat(2)}]`;
+    elements.console_log.innerHTML = `<span class="message d-md-flex justify-content-md-center">${msg} <span class="date-label">[${dateTimeFormat(2)}]</span></span>`;
 }
 
 function uploadHistory() {

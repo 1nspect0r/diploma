@@ -8,23 +8,41 @@
 <body>
 
 <!-- Page layout -->
-    <div class="container">
+    <div class="app-container">
         <!-- Header: -->
-        <div class="header">
-            <button id="btnStart">Rozpocznij</button>
-            <button id="btnGenerateGCode">Wygenerować kog G</button>
-            <br>
-            <span id="export-import">
-                <button id="btnExport">Eksportować</button>
-                <label for="input-file">Importować:</label>
-                <input type="file" id="input-file">
-            </span>
+        <div class="header border border-2 border-dark rounded-1 p-1">
+                <div class="header-1 d-md-flex justify-content-md-evenly">
+                        <button class="btn btn-outline-dark btn-lg" id="btnStart">Rozpocznij</button>
+                        <button class="btn btn-outline-dark btn-lg" id="btnGenerateGCode">Wygenerować kod obrobki</button>
+                        <button class="btn btn-outline-dark btn-lg" id="btnExport">Eksportować</button>
+                        <label for="input-file" class="btn btn-outline-dark btn-lg">Importować</label>
+                            <input type="file" id="input-file" class="d-none">
+                </div>
+            <!--
+            <div class="container-fluid">
+                <div class="row">
+                    <div class="col border border-1 rounded-1 p-1">
+                        <button id="btnStart" class="btn btn-outline-primary btn-sm">Rozpocznij</button>
+                        <button id="btnGenerateGCode">Wygenerować kog G</button>
+                    </div>
+                    <div class="col text-end border border-1 rounded-1 p-1">
+                        <div id="export-import">
+                            <button id="btnExport" class="btn btn-outline-primary">Eksportować</button>
+                            <br>
+                            <label for="input-file" class="btn btn-outline-primary">Importować</label>
+                            <input type="file" id="input-file" class="d-none">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            -->
+
             <!--<ul id="openedFiles"></ul>-->
             <!--<span id="perspective"></span>-->
             <!--<span id="drawing"></span>-->
         </div>
         <!-- Views/History: -->
-        <div class="leftList" id="leftField">
+        <div class="leftList border border-2 border-dark rounded-1 p-1" id="leftField">
             <!--
             <ul class="leftList" id="viewsList">
                 <li>Izo</li>
@@ -36,19 +54,19 @@
             <ul class="leftList" id="history"></ul>
         </div>
         <!-- Drawing: -->
-        <div class="drawing">
+        <div class="drawing border border-2 border-dark">
             <div id="viewerContext"></div>
         </div>
         <!-- Buttons (choosing elements): -->
-        <div class="rightList" id="upperField">
+        <div class="rightList border border-2 border-dark rounded-1 p-1" id="upperField">
             <ul class="rightList" id="mainChoicesList"></ul>
         </div>
         <!-- Data input: -->
-        <div class="dataInput" id="lowerField">
+        <div class="dataInput border border-2 border-dark rounded-1 p-1" id="lowerField">
             <ul class="dataInput" id="dataInput"></ul>
         </div>
         <!-- Footer: -->
-        <div class="footer">
+        <div class="footer border border-2 border-dark rounded-1 p-1">
             <span id="console-log"></span>
         </div>
     </div>

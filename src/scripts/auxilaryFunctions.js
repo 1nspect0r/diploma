@@ -48,7 +48,7 @@ export function generateGCode(przygotowka) {
 export function dateTimeFormat(n) {
 
     let _year = new Date().getFullYear();
-    let _month = new Date().getMonth();
+    let _month = 1 + (new Date().getMonth());
     let _day = new Date().getDate();
     let _hours = new Date().getHours();
     let _minutes = new Date().getMinutes();

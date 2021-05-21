@@ -1,5 +1,8 @@
 import './styles/index.scss';
-import './styles/style.css';
+import './styles/style.scss';
+
+require('bootstrap/dist/js/bootstrap');
+require('bootstrap/dist/css/bootstrap.css');
 
 if (process.env.NODE_ENV === 'development') {
     require('./index.html');
