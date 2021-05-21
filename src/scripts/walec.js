@@ -57,7 +57,6 @@ h0 - początek otworu; <br>
 h - głębokość otworu; <br>
 d - średnica otworu; <br>
 Oś otworu jest osią walca. <br>
-Płaszczyzną bazową jest płaszczyzna XY. <br>
 Stożek o kącie 120 stopni.`,
 
     listaWymiarow: [],

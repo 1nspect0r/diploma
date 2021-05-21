@@ -63,7 +63,7 @@ const functionsKostka = {
         switch (here.nazwa) {
             case `kostka`:
                 for (let i of here.listaWymiarow) {
-                    if (i === `0`) {
+                    if (i === 0) {
                         report(`Wymiary nie mogą być równe 0. `);
                         przygotowka = {};
                         etapPrzygotowki();
@@ -113,16 +113,24 @@ const functionsKostka = {
                     report(`Należy uwzględnić poprzednie obróbki czoła. `);
                     toRemove = 1;
                 }
+                if (x === 2 * r && x === y) {
+                    report(`Należy wybrać obróbkę "otwór" lub "kieszeń okrągła". `);
+                    toRemove = 1;
+                }
             }
                 break;
             case `kieszeń okrągła`: {
-                let [x0, y0, r, h] = here.listaWymiarow;
+                let [x0, y0, r, h, srednicaNarzedzia] = here.listaWymiarow;
                 if (r === '0' || h === '0') {
                     report(`Parametry r i h nie mogą być równe 0. `);
                     toRemove = 1;
                 }
                 if (h === offset1) {
                     report(`Należy uwzględnić poprzednie obróbki czoła. `);
+                    toRemove = 1;
+                }
+                if (srednicaNarzedzia === 2 * r) {
+                    report(`Średnica narzędzia jest równa średnicy kieszeni. Należy wybrać obróbkę "otwór". `);
                     toRemove = 1;
                 }
             }
@@ -328,7 +336,7 @@ const functionsKostka = {
 
             for (let i of przygotowka.kartaObrobki.listaObrobek) {
                 if (przygotowka.kartaObrobki.aktywne[przygotowka.kartaObrobki.listaObrobek.indexOf(i)]) {
-                    switch (i.nazwa) {
+                    switch (i.nazwa) { // jest offset? jest jedynka przy zetach?
                         case `czoło`: {
                             let [gruboscWarstwy, srednicaNarzedzia, gruboscPrzejscia] = i.listaWymiarow;
                             gCodeMainParts2.push(`
@@ -499,54 +507,112 @@ const functionsKostka = {
                             let iloscPrzejsc1 = h / gruboscPrzejscia;
                             let iloscPrzejsc2 = y / (2 * r);
                             let znak = 1;
-                            for (let i = 0; i < iloscPrzejsc1; i++) {
-                                if (i <= iloscPrzejsc1 - 1) {
-                                    gCodeMainParts2.push(`
+                            if (x === 2 * r) {
+                                for (let i = 0; i < iloscPrzejsc1; i++) {
+                                    if (i <= iloscPrzejsc1 - 1) {
+                                        gCodeMainParts2.push(`
                                                                     G01 Z-${gruboscPrzejscia + 1}`);
-                                } else {
-                                    gCodeMainParts2.push(`
+                                    } else {
+                                        gCodeMainParts2.push(`
                                                                     G01 Z-${calculateRemainder(h, gruboscPrzejscia) + 1}`);
-                                }
+                                    }
 
-                                gCodeMainParts2.push(`
+                                    gCodeMainParts2.push(`
+                                                                    Y${y - 2 * r}`);
+
+                                    if (i <= iloscPrzejsc1 - 1) {
+                                        gCodeMainParts2.push(`
+                                                                    Z1
+                                                                    Y-${y - 2 * r}`);
+                                    } else {
+                                        gCodeMainParts2.push(`
+                                                                    Z${h}`);
+                                    }
+                                }
+                            } else if (y === 2 * r) {
+                                for (let i = 0; i < iloscPrzejsc1; i++) {
+                                    if (i <= iloscPrzejsc1 - 1) {
+                                        gCodeMainParts2.push(`
+                                                                    G01 Z-${gruboscPrzejscia + 1}`);
+                                    } else {
+                                        gCodeMainParts2.push(`
+                                                                    G01 Z-${calculateRemainder(h, gruboscPrzejscia) + 1}`);
+                                    }
+
+                                    gCodeMainParts2.push(`
+                                                                    X${x - 2 * r}`);
+
+                                    if (i <= iloscPrzejsc1 - 1) {
+                                            gCodeMainParts2.push(`
+                                                                    Z1
+                                                                    X-${x - 2 * r}`);
+                                    } else {
+                                        gCodeMainParts2.push(`
+                                                                    Z${h}`);
+                                    }
+                                }
+                            } else {
+                                for (let i = 0; i < iloscPrzejsc1; i++) {
+                                    if (i <= iloscPrzejsc1 - 1) {
+                                        gCodeMainParts2.push(`
+                                                                    G01 Z-${gruboscPrzejscia + 1}`);
+                                    } else {
+                                        gCodeMainParts2.push(`
+                                                                    G01 Z-${calculateRemainder(h, gruboscPrzejscia) + 1}`);
+                                    }
+
+                                    gCodeMainParts2.push(`
                                                                     X${znak * (x - 2 * r)}`);
 
-                                for (let j = 1; j < iloscPrzejsc2; j++) {
-                                    if (j <= iloscPrzejsc2 - 1) {
-                                        gCodeMainParts2.push(`
+                                    for (let j = 1; j < iloscPrzejsc2; j++) {
+                                        znak *= -1;
+                                        if (j <= iloscPrzejsc2 - 1) {
+                                            gCodeMainParts2.push(`
                                                                     Y${2 * r}
                                                                     X${znak * (x - 2 * r)}`);
-                                    } else {
-                                        gCodeMainParts2.push(`
+                                        } else {
+                                            gCodeMainParts2.push(`
                                                                     Y${calculateRemainder(y, 2 * r)}
                                                                     X${znak * (x - 2 * r)}`);
+                                        }
                                     }
-                                    znak *= -1;
-                                }
+                                    if (znak === -1) { // 4th corner (corners are anti clockwise)
+                                        gCodeMainParts2.push(`
+                                                                    X${x - 2 * r}
+                                                                    Y-${y - 2 * r}
+                                                                    X-${x - 2 * 4}
+                                                                    Y${y - 2 * r}`);
+                                    } else { // 3rd corner
+                                        gCodeMainParts2.push(`
+                                                                    Y-${y - 2 * r}
+                                                                    X-${x - 2 * 4}
+                                                                    Y${y - 2 * r}
+                                                                    X${x - 2 * r}`);
+                                    }
 
-                                if (i <= iloscPrzejsc1 - 1) {
-                                    if (znak === 1) {
-                                        gCodeMainParts2.push(`
-                                                                    G01 Z1
+                                    if (i <= iloscPrzejsc1 - 1) {
+                                        if (znak === -1) {
+                                            gCodeMainParts2.push(`
+                                                                    Z1
                                                                     G00 Y-${y - 2 * r}`);
-                                    } else {
-                                        gCodeMainParts2.push(`
-                                                                    G01 Z1
+                                        } else {
+                                            gCodeMainParts2.push(`
+                                                                    Z1
                                                                     G00 X-${x - 2 * r} Y-${y - 2 * r}`);
-                                    }
-                                } else {
-                                    if (znak === 1) {
-                                        gCodeMainParts2.push(`
-                                                                    G01 X${x / 2 - r} Y${y / 2 - r} Z1`);
+                                        }
                                     } else {
+                                        if (znak === -1) {
+                                            gCodeMainParts2.push(`
+                                                                    X${x / 2 - r} Y${y / 2 - r} Z1`);
+                                        } else {
+                                            gCodeMainParts2.push(`
+                                                                    X-${x / 2 - r} Y${y / 2 - r} Z1`);
+                                        }
                                         gCodeMainParts2.push(`
-                                                                    G01 X-${x / 2 - r} Y${y / 2 - r} Z1`);
-                                    }
-                                    gCodeMainParts2.push(`
                                                                     G00 Z${h}`);
+                                    }
                                 }
                             }
-
 
                             /******************************************************************************************/
                             gCodeMainParts1.push(gCodeMainParts2.join(`
@@ -611,33 +677,50 @@ const functionsKostka = {
 
                             let iloscPrzejsc1 = h / gruboscPrzejscia;
                             let iloscPrzejsc2 = (l - srednicaNarzedzia) / srednicaNarzedzia;
-                            for (let i = 0; i < iloscPrzejsc1; i++) { // przejscia w Z
-                                if (i <= iloscPrzejsc1 - 1) {
-                                    gCodeMainParts2.push(`
+                            if (l === srednicaNarzedzia) {
+                                gCodeMainParts2.push(`
                                                                     G01 Z-${gruboscPrzejscia + 1}
                                                                     G02 G17 X0 Y0 I-${wejscieX - x0} J0`);
-                                } else {
-                                    gCodeMainParts2.push(`
-                                                                    G01 Z-${calculateRemainder(h, gruboscPrzejscia) + 1}
-                                                                    G02 G17 X0 Y0 I-${wejscieX - x0} J0`);
-                                }
-                                for (let j = 1; j < iloscPrzejsc2; j++) { // przejscia w XY
-                                    if (j <= iloscPrzejsc2 - 1) {
+                                for (let i = 1; i < iloscPrzejsc1; i++) { // przejscia w Z
+                                    if (i <= iloscPrzejsc1 - 1) {
                                         gCodeMainParts2.push(`
-                                                                    G01 X${srednicaNarzedzia}
-                                                                    G02 G17 X0 Y0 I-${wejscieX + j * srednicaNarzedzia} J0`);
+                                                                    G01 Z-${gruboscPrzejscia}
+                                                                    G02 G17 X0 Y0 I-${wejscieX - x0} J0`);
                                     } else {
                                         gCodeMainParts2.push(`
-                                                                    X${calculateRemainder(l - srednicaNarzedzia, srednicaNarzedzia)}
-                                                                    G02 G17 X0 Y0 I-${R + l / 2 - srednicaNarzedzia / 2} J0`);
+                                                                    G01 Z-${calculateRemainder(h, gruboscPrzejscia)}
+                                                                    G02 G17 X0 Y0 I-${wejscieX - x0} J0`);
                                     }
                                 }
-                                if (i <= iloscPrzejsc1 - 1) {
-                                    gCodeMainParts2.push(`
+                            } else {
+                                for (let i = 0; i < iloscPrzejsc1; i++) { // przejscia w Z
+                                    if (i <= iloscPrzejsc1 - 1) {
+                                        gCodeMainParts2.push(`
+                                                                    G01 Z-${gruboscPrzejscia + 1}
+                                                                    G02 G17 X0 Y0 I-${wejscieX - x0} J0`);
+                                    } else {
+                                        gCodeMainParts2.push(`
+                                                                    G01 Z-${calculateRemainder(h, gruboscPrzejscia) + 1}
+                                                                    G02 G17 X0 Y0 I-${wejscieX - x0} J0`);
+                                    }
+                                    for (let j = 1; j < iloscPrzejsc2; j++) { // przejscia w XY
+                                        if (j <= iloscPrzejsc2 - 1) {
+                                            gCodeMainParts2.push(`
+                                                                    G01 X${srednicaNarzedzia}
+                                                                    G02 G17 X0 Y0 I-${wejscieX + j * srednicaNarzedzia} J0`);
+                                        } else {
+                                            gCodeMainParts2.push(`
+                                                                    X${calculateRemainder(l - srednicaNarzedzia, srednicaNarzedzia)}
+                                                                    G02 G17 X0 Y0 I-${R + l / 2 - srednicaNarzedzia / 2} J0`);
+                                        }
+                                    }
+                                    if (i <= iloscPrzejsc1 - 1) {
+                                        gCodeMainParts2.push(`
                                                                     G00 X-${R + l / 2 - srednicaNarzedzia / 2} Z1`);
-                                } else {
-                                    gCodeMainParts2.push(`
+                                    } else {
+                                        gCodeMainParts2.push(`
                                                                     G00 X-${l / 2 + srednicaNarzedzia / 2}`);
+                                    }
                                 }
                             }
                             gCodeMainParts2.push(`
@@ -651,7 +734,8 @@ const functionsKostka = {
                     }
                     gCodeMainParts1.push(`
                                                                     G90
-                                                                    G00 X100 Y100 Z100 ${gCodeCommentSign} dojazd w pozycje zmiany narzedzia`);
+                                                                    G00 X100 Y100 Z100 ${gCodeCommentSign} dojazd w pozycje zmiany narzedzia
+                                                                    ${gCodeCommentSign}`);
                 } else {
                     switch (i.nazwa) {
                         case `czoło`:
@@ -677,6 +761,7 @@ const functionsKostka = {
                     }
                 }
             }
+
         gCodeMainParts1.push(`
                                                                     M30`);
 
@@ -1083,7 +1168,8 @@ const functionsWalec = {
 
             gCodeMainParts1.push(`
                                                                     G90
-                                                                    G00 Z100 X100 ${gCodeCommentSign} dojazd w pozycje zmiany narzedzia`);
+                                                                    G00 Z100 X100 ${gCodeCommentSign} dojazd w pozycje zmiany narzedzia
+                                                                    ${gCodeCommentSign}`);
         }
         gCodeMainParts2.push(`
                                                                     M30`);
@@ -1234,6 +1320,10 @@ function report(msg) {
     elements.console_log.innerHTML = `<span class="message d-md-flex justify-content-md-center">${msg} <span class="date-label">[${dateTimeFormat(2)}]</span></span>`;
 }
 
+function report2(msg) {
+    elements.console_log_2.innerHTML = `<span class="message d-md-flex justify-content-md-center">${msg}</span>`;
+}
+
 function uploadHistory() {
     clearHTML(elements.history);
     modifyHTML(elements.history, `<li>${przygotowka.nazwa}</li>`);
@@ -1376,10 +1466,12 @@ function etapPrzygotowki() { // можно создать одну переме�
 
     function step1() {
         loadList(dostepnePrzygotowki, step2); // clears upper section, adds names, adds listeners
+        report2(`Wybierz przygotówkę. `);
     }
 
     function step2() {
         przygotowka = loadInput(this, dostepnePrzygotowki, step3, step1); // picks object by clicked item, !rewrites upper section with "opis"! , clears lower section, adds names, input fields and a button, adds listener
+        report2(`Wpisz wymiary. `);
     }
 
     function step3() {
@@ -1393,14 +1485,17 @@ function etapObrobki() {
 
     function step1() {
         loadList(przygotowka.kartaObrobki.dostepneObrobki, step2);
+        report2(`Wybierz obróbkę. `);
     }
 
     function step2() {
         obrobka = loadInput(this, przygotowka.kartaObrobki.dostepneObrobki, step3, step1);
+        report2(`Wpisz wymiary. `);
     }
 
     function step3() {
         proceed(obrobka);
+        report2(`Wybierz obróbkę. `);
     }
 }
 
@@ -1521,6 +1616,7 @@ ${i + 1}. ${przygotowka.kartaObrobki.listaObrobek[i].nazwa}: `;
     });
     elements.btnExport.addEventListener('click', exportObject);
     elements.inputFile.addEventListener('change', importObject);
+    elements.btnHelp.addEventListener('click', showHelp);
     // Class "viewsList":
     /*
     for (let i = 0; i < elements.views.length; i++) {
@@ -1530,14 +1626,63 @@ ${i + 1}. ${przygotowka.kartaObrobki.listaObrobek[i].nazwa}: `;
     // Class "footer":
 }
 
-function go() {
-    // show guide
 
-    // add a button that listens to click and leads to bindListeners
-    bindListeners();
+function showHelp() {
+
+    // adding a guide
+    elements.page.innerHTML = `
+    <div id="help-page" style="font-size: 11px">
+        <div class="app-container" style="font-weight: normal; font-size: 14px">
+            <div class="header border border-2 border-primary rounded-1 p-1" style="position: relative;">
+                <button class="btn btn-primary btn-sm" id="close-help-page" style="position: absolute; right: 4px;">Zamknij</button>
+                <span class="d-md-flex justify-content-md-evenly">
+                    W tym polu znajdują się przyciski: <br>
+                    <ul>
+                    <li>"Rozpocznij" - musisz go wcisnąć aby zacząć pracę</li>
+                    <li>"Wygenerować kod obróbki" - jak skończysz pracę, wciśnij go aby wygenerować plik z kodem do obróbki</li>
+                    <li>"Eksportować" - w każdy moment możesz wcisnąć go aby ściągnąć plik z danymi modelu, który można będzie użyć przy pomocy następnego przycisku</li>
+                    <li>"Importować" - wciśnij jeśli chcesz wgrać poprzednio wygenerowany tutaj plik aby odtworzyć model</li>
+                    </ul>
+                </span>
+            </div>
+            <div class="leftList border border-2 border-primary rounded-1 p-1">
+                W tym polu pojawią się dodane obróbki. <br>
+                Jeśli <b>najechać kursorem na napis</b>, wyświetli się materiał, usunięty przy odpowiedniej obróbce. <br>
+                <b>Klikając na napis</b> można wygasić odpowiednią obróbkę, klikając <b>ponownie</b> - przywrócić. Wygaszona obróbka nie wyświetla się na rysunku i nie tworzy się dla niej kod obróbki, ale należy
+                <b>uważać - wygaszenie obróbki nie wpłynie na kolejne obróbki!</b> <br>
+                Jeśli w tym polu jest chociażby przygotówka - można ściągnąć plik z danymi klikając przycisk "Eksportować" w polu wyżej. Jeśli jest chociażby jedna aktywna obróbka - można wygenerować kod obróbki klikając odpowiedni przycisk w polu wyżej.
+            </div>
+            <div class="drawing border border-2 border-primary">
+                W tym polu znajduje się rysunek modelu. <br>
+                Model można obracać ciągnąc myszką, można przybliżać i oddalać obracając kółko, a jeśli kółko wcisnąć - model przesunie się razem z kursorem. <br>
+                Razem z modelem pojawiają się trzy strzałki wskazujące kierunki osi: <br> czerwona - oś X, zielona - oś Y, niebieska - oś Z.
+            </div>
+            <div class="rightList border border-2 border-primary rounded-1 p-1">
+                W tym polu pojawiają się dostępne przygotówki i elementy dostępne do wykonania, które można wybrać klikając na nie.
+            </div>
+            <div class="dataInput border border-2 border-primary rounded-1 p-1">
+                W tym polu, po wybraniu przygotówki lub elementu, pojawiają się pola do wpisywania ich wymiarów, i przyciski "Wstecz" i "Zapisz". Pierwszy przycisk przywraca listę przygotówek czy elementów w polu wyżej, drugi zapisuje wpisane dane. Zaraz po wciśnięciu przycisku "Zapisz" generuje się model.
+            </div>
+            <div class="footer border border-2 border-primary rounded-1 p-1">
+                W tym polu wyświetlają się komunikaty przy błędach, n.p. jeśli jako długość przygotówki zostanie wprowadzone zero.
+            </div>
+            <div class="helper border border-2 border-primary rounded-1 p-1">
+                W tym polu wyświetlają się podpowiedzi dot. postępowań przy modelowaniu.
+            </div>
+        </div>
+    </div>
+    `;
+
+    // listening to button click -> loading page
+    document.getElementById(`close-help-page`).addEventListener(`click`, () => {
+        elements.page.innerHTML = ``;
+        elements.page.appendChild(elements.mainPage);
+        elements.drawingOuter.appendChild(elements.drawing);
+
+    });
 }
 
-go();
+bindListeners();
 
 /*
 {
