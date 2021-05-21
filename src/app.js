@@ -1,5 +1,4 @@
 import './styles/index.scss';
-import './styles/style.scss';
 
 require('bootstrap/dist/js/bootstrap');
 require('bootstrap/dist/css/bootstrap.css');
