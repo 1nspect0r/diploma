@@ -793,6 +793,14 @@ const actionsWalec = {
                     report(`Średnica końcowa nie może być większa lub równa początkowej. `);
                     toRemove = 1;
                 }
+                if (p > (d0 - d) / 2) {
+                    report(`Za duża głębokość zanurzenia. `);
+                    toRemove = 1;
+                }
+                if (q > h) {
+                    report(`Za duża szerokość płytki. `);
+                    toRemove = 1;
+                }
             }
                 break;
             case `rowek czołowy`: {
@@ -805,6 +813,14 @@ const actionsWalec = {
                 }
                 if (d0 < d || d === d0) {
                     report(`Średnica końcowa nie może być większa lub równa początkowej. `);
+                    toRemove = 1;
+                }
+                if (p > (d0 - d) / 2) {
+                    report(`Za duża szerokość płytki. `);
+                    toRemove = 1;
+                }
+                if (q > h) {
+                    report(`Za duża głębokość zanurzenia. `);
                     toRemove = 1;
                 }
             }

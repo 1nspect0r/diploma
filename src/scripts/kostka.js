@@ -51,7 +51,7 @@ const czolo1 = {
     opis: `<span class="opis-1"> Obróbka czoła. <br>
 h - grubość warstwy do zdjęcia <br>
 f - posuw <br>
-UWAGA! Przy modelowaniu należy uwzględniać grubość warstwy, jakby nie była zdjęta. Kod obróbki natomiast będzie uwzględniał wszystkie zmiany, oby zmniejszyć ilość ruchów roboczych poza przedmiotem obrabianym. </span>`,
+UWAGA! Przy modelowaniu należy uwzględniać grubość warstwy, jakby nie była zdjęta. Kod obróbki natomiast będzie uwzględniał wszystkie zmiany, aby zmniejszyć ilość ruchów roboczych poza przedmiotem obrabianym. </span>`,
 
     listaWymiarow: [],
     nazwyWymiarow: ['h', 'średnica narzędzia', 'grubość przejścia w Z', `f`]

@@ -1,4 +1,4 @@
-const rowekCzolowy1 = { // это просто другое нажендже. Если д = 0, то нужно пройти немного дальше, на минус, чтобы спилить пипку.
+const rowekCzolowy1 = {
     nazwa: `rowek czołowy`,
     opis: `<span class="opis-1"> Rowek czołowy. <br>
 d0 - średnica zewnętrzna rowka <br>
@@ -14,7 +14,7 @@ Dla płytek, mierzonych do górnej krawędzi. </span>`,
     listaWymiarow: [],
     nazwyWymiarow: [`d0`, `d`, `h0`, `h`, `r`, `q [μm]`, `p [μm]`, `f`, `S [obr/min]`]
 };
-const rowekWzdluzny1 = { // отличается от toczenie1 направлением движений: точене двигается вдоль, опускаясь, а ровек - откусывает, шагая
+const rowekWzdluzny1 = {
     nazwa: `rowek wzdłużny`,
     opis: `<span class="opis-1"> Rowek wzdłużny. <br>
 d0 - średnica początkowa obróbki <br>
