@@ -10,55 +10,50 @@ const kostka = require('./kostka').kostka;
 const walec = require('./walec').walec;
 const elements = require('./elements.js');
 const processor = require('./cad').gProcessor;
-const originFunction = require('../models/origin-function'); // is an OpenJSCAD code for origin figure (colored arrows)
-const m3 = require('../models/m-3');
-
+const originFunction = require('../models/origin-function');
 
 
 // Main object storing:
-let obrobka = {}; // changes completely each time a new obrobka is added, stores obrobka and is pushed to listaObrobek array in przygotowka object
-let przygotowka = {}; // this is the main object, here obrobka is stored; it is used to draw figure, should be exported to save, might also want to import right here too. Nothing changes while program is running, only obrobka objects added in the array.
+let obrobka = {}; // changes completely each time a new obrobka is added, stores obrobka and is pushed to "listaObrobek" array in "przygotowka" object
+let przygotowka = {}; // the main object
 const dostepnePrzygotowki = [kostka, walec];
-// let listaPrzygotowek = []; for storing different imported przygotowka objects at the same time (function store)
-let toRemove = 0; // acquires 1 when current obrobka is going to be removed
-
+let toRemove = 0; // acquires 1 when current processing "obrobka" should and will be removed
 
 
 // OpenJSCAD and G-code manipulations:
-                let openjscadModelParts2 = []; // one filled each time a new part is generated, pushed joined to openjscadModelParts1 and cleared. Should be filled with commas manually!
-            let openjscadModelParts1 = []; // here code for figures is stored (one element for one figure including translations)
-        let openjscadModel = ``; // = openjscadModelParts1.join(', ') here code for figures is united
-        let openjscadOrigin = ``;
-        let openjscadCentering = ``;
-    let openjscadCodeParts = [`
+let openjscadModelParts2 = []; // filled each time a part is drawn, .join and .push to "openjscadModelParts1", then cleared. Should be filled with commas manually!
+let openjscadModelParts1 = []; // here code for parts is stored (one array element stores code for one part with translations)
+let openjscadModel = ``; // "openjscadModelParts1.join(', ')"
+let openjscadOrigin = ``; // calls "originFunction" inside OpenJSCAD code
+let openjscadCentering = ``; // centers model on a screen depending on its dimensions
+let openjscadCodeParts = [`
 function main() {
     let model =
         union(`,
-            openjscadOrigin,
-            `difference(`,
-                openjscadModel,
-            `)
+    openjscadOrigin,
+    `difference(`,
+    openjscadModel,
+    `)
         )`, openjscadCentering, `;
     return model;
 }
-`, originFunction]; // here code for figures is stored with the functional code
-let openjscadCode = ``; // = openjscadCodeParts.join(``) here all code is united, final entity
+`, originFunction]; // here code for parts is stored within a draft for OpenJSCAD to function
+let openjscadCode = ``; // "openjscadCodeParts.join(``)", final entity, is launched to OpenJSCAD
 
-                let gCodeMainParts2 = [];
-            let gCodeMainParts1 = [];
-        let gCodeMain = ``;
-        let gCodeCommentSign = `;`;
-    let gCodeParts = [`
+let gCodeMainParts2 = [];
+let gCodeMainParts1 = [];
+let gCodeMain = ``;
+let gCodeCommentSign = `;`;
+let gCodeParts = [`
                                                                     ${gCodeCommentSign} Kod wygenerowano automatycznie w aplikacji, stanowiacej podstawe pracy dyplomowej.
                                                                     ${gCodeCommentSign}`,
-                                                                    gCodeMain
-    ];
+    gCodeMain
+];
 let gCode = ``;
-let doPorownania = ``;
 
 let offset1 = 0;
 
-const functionsKostka = {
+const actionsKostka = {
     checkValues: function (here) {
         switch (here.nazwa) {
             case `kostka`:
@@ -72,10 +67,12 @@ const functionsKostka = {
                 }
                 break;
             case `czoło`: {
-                let [h] = here.listaWymiarow;
-                if (h === '0') {
-                    report(`Parametr h nie może być równy 0. `);
-                    toRemove = 1;
+                let [h, fi, g, f] = here.listaWymiarow;
+                for (let i of [h, fi, g, f]) {
+                    if (i === 0) {
+                        report(`Parametry "h", średnica narzędzia, grubość przejścia w Z i "f" nie mogą być równe 0. `);
+                        toRemove = 1;
+                    }
                 }
                 if (h > przygotowka.listaWymiarow[2]) {
                     report(`Parametr h nie może być większy niż wysokość kostki. `);
@@ -88,10 +85,12 @@ const functionsKostka = {
             }
                 break;
             case `otwór`: {
-                let [x, y, d, h] = here.listaWymiarow;
-                if (d === '0' || h === '0') {
-                    report(`Parametry d i h nie mogą być równa 0. `);
-                    toRemove = 1;
+                let [x, y, d, h, f] = here.listaWymiarow;
+                for (let i of [d, h, f]) {
+                    if (i === 0) {
+                        report(`Parametry "d", "h" i "f" nie mogą być równe 0. `);
+                        toRemove = 1;
+                    }
                 }
                 if (h === offset1) {
                     report(`Należy uwzględnić poprzednie obróbki czoła. `);
@@ -100,14 +99,16 @@ const functionsKostka = {
             }
                 break;
             case `kieszeń prostokątna`: {
-                let [x0, y0, x, y, h, r] = here.listaWymiarow;
+                let [x0, y0, x, y, h, r, g, f] = here.listaWymiarow;
+                for (let i of [x, y, h, r, g, f]) {
+                    if (i === 0) {
+                        report(`Parametry "x", "y", "h", "r", grubość przejścia w Z i "f" nie mogą być równe 0. `);
+                        toRemove = 1;
+                    }
+                }
                 if (y - 2 * r < 0 || x - 2 * r < 0) {
                     report(`Za duży promień zaokrąglenia. Obróbka nie została wykonana. `);
                     toRemove = 1; // does nothing if importing an object (which is bad), THOUGH - cannot export objects that pass in this section
-                }
-                if (x === '0' || y === '0' || h === '0' || r === '0') {
-                    report(`Parametry x, y, h i r nie mogą być równe 0. `);
-                    toRemove = 1;
                 }
                 if (h === offset1) {
                     report(`Należy uwzględnić poprzednie obróbki czoła. `);
@@ -120,33 +121,37 @@ const functionsKostka = {
             }
                 break;
             case `kieszeń okrągła`: {
-                let [x0, y0, r, h, srednicaNarzedzia] = here.listaWymiarow;
-                if (r === '0' || h === '0') {
-                    report(`Parametry r i h nie mogą być równe 0. `);
-                    toRemove = 1;
+                let [x0, y0, r, h, fi, g, f] = here.listaWymiarow;
+                for (let i of [r, h, fi, g, f]) {
+                    if (i === 0) {
+                        report(`Parametry "r", "h", średnica narzędzia, grubość przejścia w Z i "f" nie mogą być równe 0. `);
+                        toRemove = 1;
+                    }
                 }
                 if (h === offset1) {
                     report(`Należy uwzględnić poprzednie obróbki czoła. `);
                     toRemove = 1;
                 }
-                if (srednicaNarzedzia === 2 * r) {
+                if (fi === 2 * r) {
                     report(`Średnica narzędzia jest równa średnicy kieszeni. Należy wybrać obróbkę "otwór". `);
                     toRemove = 1;
                 }
             }
                 break;
             case `rowek kołowy`: {
-                let [x0, y0, R, l, h] = here.listaWymiarow;
+                let [x0, y0, R, l, h, fi, g, f] = here.listaWymiarow;
+                for (let i of [R, l, h, fi, g, f]) {
+                    if (i === 0) {
+                        report(`Parametry "R", "l", "h", średnica narzędzia, grubość przejścia w Z i "f" nie mogą być równe 0. `);
+                        toRemove = 1;
+                    }
+                }
                 if (R - l / 2 < 0) { // R < l / 2
                     report(`Rowek kołowy: promień ścieżki mniejszy od połowy jej szerokości, wykonanie niemożliwe ze względów geometrycznych. Obróbka nie została wykonana. `);
                     toRemove = 1;
                 }
                 if (R - l / 2 === 0) {
                     report(`R = 0.5l - wynikiem będzie kieszeń okrągła. Obróbka nie została wykonana. Proszę wybrać odpowiednią opcję. `);
-                    toRemove = 1;
-                }
-                if (R === '0' || l === '0' || h === '0') {
-                    report(`Parametry R, l i h nie mogą być równe 0. `);
                     toRemove = 1;
                 }
                 if (h === offset1) {
@@ -334,67 +339,67 @@ const functionsKostka = {
 
         let offset2 = 0;
 
-            for (let i of przygotowka.kartaObrobki.listaObrobek) {
-                if (przygotowka.kartaObrobki.aktywne[przygotowka.kartaObrobki.listaObrobek.indexOf(i)]) {
-                    switch (i.nazwa) { // jest offset? jest jedynka przy zetach?
-                        case `czoło`: {
-                            let [gruboscWarstwy, srednicaNarzedzia, gruboscPrzejscia] = i.listaWymiarow;
-                            gCodeMainParts2.push(`
+        for (let i of przygotowka.kartaObrobki.listaObrobek) {
+            if (przygotowka.kartaObrobki.aktywne[przygotowka.kartaObrobki.listaObrobek.indexOf(i)]) {
+                switch (i.nazwa) { // jest offset? jest jedynka przy zetach?
+                    case `czoło`: {
+                        let [h, fi, g, f] = i.listaWymiarow;
+                        gCodeMainParts2.push(`
                                                                     ${gCodeCommentSign} obrobka nr. ${przygotowka.kartaObrobki.listaObrobek.indexOf(i) + 1} - czolo
-                                                                    ${gCodeCommentSign} Txxxx - wybor narzedzia o srednicy ${srednicaNarzedzia} mm
-                                                                    G00 X-${srednicaNarzedzia / 2} Y${srednicaNarzedzia / 2}
+                                                                    ${gCodeCommentSign} Txxxx - wybor narzedzia o srednicy ${fi} mm
+                                                                    G00 X-${fi / 2} Y${fi / 2}
                                                                     Z1
                                                                     G91`);
 
-                            let iloscPrzejsc1 = gruboscWarstwy / gruboscPrzejscia;
-                            let iloscPrzejsc2 = dlugoscKostki / srednicaNarzedzia;
-                            let znak = 1;
+                        let iloscPrzejsc1 = h / g;
+                        let iloscPrzejsc2 = dlugoscKostki / fi;
+                        let znak = 1;
 
-                            for (let i = 0; i < iloscPrzejsc1; i ++) {
+                        for (let i = 0; i < iloscPrzejsc1; i++) {
 
-                                if (i <= iloscPrzejsc1 - 1) {
-                                    gCodeMainParts2.push(`
-                                                                    G01 Z-${gruboscPrzejscia - offset2 + 1}`);
-                                } else {
-                                    gCodeMainParts2.push(`
-                                                                    G01 Z-${calculateRemainder(gruboscWarstwy, gruboscPrzejscia) + 1}`);
-                                }
-
-                                for (let j = 1; j < iloscPrzejsc2; j++) { // j = 1 because the last line is out of this loop
-                                    gCodeMainParts2.push(`
-                                                                    X${znak * (szerokoscKostki + srednicaNarzedzia)}
-                                                                    Y${srednicaNarzedzia}`);
-                                    znak *= -1;
-                                }
+                            if (i <= iloscPrzejsc1 - 1) {
                                 gCodeMainParts2.push(`
-                                                                    X${znak * (szerokoscKostki + srednicaNarzedzia)}`);
-
-                                if (i <= iloscPrzejsc1 - 1) {
-                                    if (znak === -1) {
-                                        gCodeMainParts2.push(`
-                                                                    G00 Y-${Math.ceil(iloscPrzejsc2) * srednicaNarzedzia} Z1`);
-                                    } else {
-                                        gCodeMainParts2.push(`
-                                                                    G00 X-${szerokoscKostki + srednicaNarzedzia} Y-${Math.ceil(iloscPrzejsc2) * srednicaNarzedzia} Z1`);
-                                    }
-                                } else {
-                                    gCodeMainParts2.push(`
-                                                                    G00 Z1`);
-                                }
+                                                                    G01 Z-${g - offset2 + 1}`);
+                            } else {
+                                gCodeMainParts2.push(`
+                                                                    G01 Z-${calculateRemainder(h, g) + 1}`);
                             }
 
-                            gCodeMainParts1.push(gCodeMainParts2.join(`
-                            `));
-                            gCodeMainParts2 = [];
-
-                            offset2 += gruboscWarstwy;
-                        }
-                            break;
-                        case `otwór`: {
-                            let [x, y, d, h] = i.listaWymiarow;
-                            h = h - offset2;
-                            let pyptyk = d / 4 * Math.tan(30 * Math.PI / 180);
+                            for (let j = 1; j < iloscPrzejsc2; j++) { // j = 1 because the last line is out of this loop
+                                gCodeMainParts2.push(`
+                                                                    X${znak * (szerokoscKostki + fi)}
+                                                                    Y${fi}`);
+                                znak *= -1;
+                            }
                             gCodeMainParts2.push(`
+                                                                    X${znak * (szerokoscKostki + fi)}`);
+
+                            if (i <= iloscPrzejsc1 - 1) {
+                                if (znak === -1) {
+                                    gCodeMainParts2.push(`
+                                                                    G00 Y-${Math.ceil(iloscPrzejsc2) * fi} Z1`);
+                                } else {
+                                    gCodeMainParts2.push(`
+                                                                    G00 X-${szerokoscKostki + fi} Y-${Math.ceil(iloscPrzejsc2) * fi} Z1`);
+                                }
+                            } else {
+                                gCodeMainParts2.push(`
+                                                                    G00 Z1`);
+                            }
+                        }
+
+                        gCodeMainParts1.push(gCodeMainParts2.join(`
+                            `));
+                        gCodeMainParts2 = [];
+
+                        offset2 += h;
+                    }
+                        break;
+                    case `otwór`: {
+                        let [x, y, d, h, f] = i.listaWymiarow;
+                        h = h - offset2;
+                        let pyptyk = d / 4 * Math.tan(30 * Math.PI / 180);
+                        gCodeMainParts2.push(`
                                                                     ${gCodeCommentSign} obrobka nr. ${przygotowka.kartaObrobki.listaObrobek.indexOf(i) + 1} - otwor
                                                                     ${gCodeCommentSign} Txxxx - wybor narzedzia o srednicy ${d} mm
                                                                     G00 X${x} Y${y}
@@ -403,235 +408,111 @@ const functionsKostka = {
                                                                     G01 Z-${h + 1 + pyptyk}
                                                                     Z${h + 1 + pyptyk}`); // pyptyk everywhere because it was added before G91!
 
-                            gCodeMainParts1.push(gCodeMainParts2.join(`
+                        gCodeMainParts1.push(gCodeMainParts2.join(`
                             `));
-                            gCodeMainParts2 = [];
-                        }
-                            break;
-                        case `kieszeń prostokątna`: {
-                            let [x0, y0, x, y, h, r, gruboscPrzejscia] = i.listaWymiarow;
-                            h = h - offset2;
-                            gCodeMainParts2.push(`
+                        gCodeMainParts2 = [];
+                    }
+                        break;
+                    case `kieszeń prostokątna`: {
+                        let [x0, y0, x, y, h, r, gruboscPrzejscia, f] = i.listaWymiarow;
+                        h = h - offset2;
+                        gCodeMainParts2.push(`
                                                                     ${gCodeCommentSign} obrobka nr. ${przygotowka.kartaObrobki.listaObrobek.indexOf(i) + 1} - kieszen prostokatna
                                                                     ${gCodeCommentSign} Txxxx - wybor narzedzia o srednicy ${2 * r} mm
                                                                     G00 X${x0 + r} Y${y0 + r}
                                                                     Z1
                                                                     G91`);
-                            /******************************************************************************************/
-                            // let iloscPrzejsc1 = h / gruboscPrzejscia;
-                            // let iloscPrzejsc2 = (y - 2 * r) / srednicaNarzedzia;
-                            // let znak = 1;
-                            // for (let i = 0; i < iloscPrzejsc1; i++) {
-                            //     if (i <= iloscPrzejsc1 - 1) {
-                            //         gCodeMainParts2.push(`
-                            //                                                 G01 Z-${gruboscPrzejscia + 1}
-                            //                                                 X${znak * (x - 2 * r - srednicaNarzedzia)}`);
-                            //     } else {
-                            //         gCodeMainParts2.push(`
-                            //                                             G01 Z-${calculateRemainder(h, gruboscPrzejscia) + 1}
-                            //                                             X${znak * (x - 2 * r - srednicaNarzedzia)}`);
-                            //     }
-                            //
-                            //     for (let j = 1; j < iloscPrzejsc2; j++) {                                               // !!! wrong
-                            //         if (i <= iloscPrzejsc2 - 1) {
-                            //             gCodeMainParts2.push(`
-                            //                                                     Y${srednicaNarzedzia}
-                            //                                                     X${znak * (x - 2 * r - srednicaNarzedzia)}`);
-                            //         } else {
-                            //             if (calculateRemainder((y - 2 * r), srednicaNarzedzia) > (srednicaNarzedzia / 2)) {
-                            //                 gCodeMainParts2.push(`
-                            //                                                 Y${calculateRemainder((y - 2 * r), srednicaNarzedzia)}
-                            //                                                 X${znak * (x - 2 * r - srednicaNarzedzia)}`);
-                            //             }
-                            //         }
-                            //         znak *= -1;
-                            //     }
-                            //     gCodeMainParts2.push(`
-                            //                                                 Z${gruboscPrzejscia + 1}`);
-                            //     let ruchY = 0;
-                            //     if ((srednicaNarzedzia / 2) >= calculateRemainder((y - 2 * r), srednicaNarzedzia)) {
-                            //         ruchY = calculateRemainder((y - 2 * r), srednicaNarzedzia);
-                            //     }
-                            //     if (znak === 1) {
-                            //         gCodeMainParts2.push(`
-                            //                                                 G00 X${x - 2 * r - srednicaNarzedzia / 2} Y${ruchY + srednicaNarzedzia / 2}`);
-                            //     } else {
-                            //         gCodeMainParts2.push(`
-                            //                                                 G00 X${srednicaNarzedzia / 2} Y${ruchY + srednicaNarzedzia / 2}`);
-                            //     }
-                            //     gCodeMainParts2.push(`
-                            //                                                 G01 Z-${gruboscPrzejscia + 1}
-                            //                                                 Y-${y - 2 * r}
-                            //                                                 X-${x - 2 * r}
-                            //                                                 Y${y - 2 * r}
-                            //                                                 X${x - 2 * r}
-                            //                                                 Y${srednicaNarzedzia / 2}
-                            //                                                 G02 G17 X${srednicaNarzedzia / 2} Y-${srednicaNarzedzia / 2} I0 J-${srednicaNarzedzia / 2}
-                            //                                                 G01 Y-${y - 2 * r}
-                            //                                                 G02 G17 X-${srednicaNarzedzia / 2} Y-${srednicaNarzedzia / 2} I-${srednicaNarzedzia / 2} J0
-                            //                                                 G01 X-${x - 2 * r}
-                            //                                                 G02 G17 X-${srednicaNarzedzia / 2} Y${srednicaNarzedzia / 2} I0 J${srednicaNarzedzia / 2}
-                            //                                                 G01 Y${y - 2 * r}
-                            //                                                 G02 G17 X${srednicaNarzedzia / 2} Y${srednicaNarzedzia / 2} I${srednicaNarzedzia / 2} J0
-                            //                                                 G01 X${x - 2 * r}`);
-                            //     let iloscPrzejsc3 = r / srednicaNarzedzia;
-                            //     for (let i = 1; i < iloscPrzejsc3; i++) {
-                            //         let promienPrzejscia = srednicaNarzedzia / 2 + i * srednicaNarzedzia;
-                            //         if (i <= iloscPrzejsc3 - 1) {
-                            //             gCodeMainParts2.push(`
-                            //                                                 Y${srednicaNarzedzia}
-                            //                                                 G02 G17 X${promienPrzejscia} Y-${promienPrzejscia} I0 J-${promienPrzejscia}
-                            //                                                 G01 Y-${y - 2 * r}
-                            //                                                 G02 G17 X-${promienPrzejscia} Y-${promienPrzejscia} I-${promienPrzejscia} J0
-                            //                                                 G01 X-${x - 2 * r}
-                            //                                                 G02 G17 X-${promienPrzejscia} Y${promienPrzejscia} I0 J${promienPrzejscia}
-                            //                                                 G01 Y${y - 2 * r}
-                            //                                                 G02 G17 X${promienPrzejscia} Y${promienPrzejscia} I${promienPrzejscia} J0
-                            //                                                 G01 X${x - 2 * r}`);
-                            //         } else {
-                            //             promienPrzejscia = 0;
-                            //             gCodeMainParts2.push(`
-                            //                                                 Y${calculateRemainder(r, srednicaNarzedzia)}
-                            //                                                 G02 G17 X${promienPrzejscia} Y-${promienPrzejscia} I0 J-${promienPrzejscia}
-                            //                                                 G01 Y-${y - 2 * r}
-                            //                                                 G02 G17 X-${promienPrzejscia} Y-${promienPrzejscia} I-${promienPrzejscia} J0
-                            //                                                 G01 X-${x - 2 * r}
-                            //                                                 G02 G17 X-${promienPrzejscia} Y${promienPrzejscia} I0 J${promienPrzejscia}
-                            //                                                 G01 Y${y - 2 * r}
-                            //                                                 G02 G17 X${promienPrzejscia} Y${promienPrzejscia} I${promienPrzejscia} J0
-                            //                                                 G01 X${x - 2 * r}`);                        /// !!! to be continued
-                            //         }
-                            //     }
-                            // }
+                        /******************************************************************************************/
+                        // let iloscPrzejsc1 = h / gruboscPrzejscia;
+                        // let iloscPrzejsc2 = (y - 2 * r) / srednicaNarzedzia;
+                        // let znak = 1;
+                        // for (let i = 0; i < iloscPrzejsc1; i++) {
+                        //     if (i <= iloscPrzejsc1 - 1) {
+                        //         gCodeMainParts2.push(`
+                        //                                                 G01 Z-${gruboscPrzejscia + 1}
+                        //                                                 X${znak * (x - 2 * r - srednicaNarzedzia)}`);
+                        //     } else {
+                        //         gCodeMainParts2.push(`
+                        //                                             G01 Z-${calculateRemainder(h, gruboscPrzejscia) + 1}
+                        //                                             X${znak * (x - 2 * r - srednicaNarzedzia)}`);
+                        //     }
+                        //
+                        //     for (let j = 1; j < iloscPrzejsc2; j++) {                                               // !!! wrong
+                        //         if (i <= iloscPrzejsc2 - 1) {
+                        //             gCodeMainParts2.push(`
+                        //                                                     Y${srednicaNarzedzia}
+                        //                                                     X${znak * (x - 2 * r - srednicaNarzedzia)}`);
+                        //         } else {
+                        //             if (calculateRemainder((y - 2 * r), srednicaNarzedzia) > (srednicaNarzedzia / 2)) {
+                        //                 gCodeMainParts2.push(`
+                        //                                                 Y${calculateRemainder((y - 2 * r), srednicaNarzedzia)}
+                        //                                                 X${znak * (x - 2 * r - srednicaNarzedzia)}`);
+                        //             }
+                        //         }
+                        //         znak *= -1;
+                        //     }
+                        //     gCodeMainParts2.push(`
+                        //                                                 Z${gruboscPrzejscia + 1}`);
+                        //     let ruchY = 0;
+                        //     if ((srednicaNarzedzia / 2) >= calculateRemainder((y - 2 * r), srednicaNarzedzia)) {
+                        //         ruchY = calculateRemainder((y - 2 * r), srednicaNarzedzia);
+                        //     }
+                        //     if (znak === 1) {
+                        //         gCodeMainParts2.push(`
+                        //                                                 G00 X${x - 2 * r - srednicaNarzedzia / 2} Y${ruchY + srednicaNarzedzia / 2}`);
+                        //     } else {
+                        //         gCodeMainParts2.push(`
+                        //                                                 G00 X${srednicaNarzedzia / 2} Y${ruchY + srednicaNarzedzia / 2}`);
+                        //     }
+                        //     gCodeMainParts2.push(`
+                        //                                                 G01 Z-${gruboscPrzejscia + 1}
+                        //                                                 Y-${y - 2 * r}
+                        //                                                 X-${x - 2 * r}
+                        //                                                 Y${y - 2 * r}
+                        //                                                 X${x - 2 * r}
+                        //                                                 Y${srednicaNarzedzia / 2}
+                        //                                                 G02 G17 X${srednicaNarzedzia / 2} Y-${srednicaNarzedzia / 2} I0 J-${srednicaNarzedzia / 2}
+                        //                                                 G01 Y-${y - 2 * r}
+                        //                                                 G02 G17 X-${srednicaNarzedzia / 2} Y-${srednicaNarzedzia / 2} I-${srednicaNarzedzia / 2} J0
+                        //                                                 G01 X-${x - 2 * r}
+                        //                                                 G02 G17 X-${srednicaNarzedzia / 2} Y${srednicaNarzedzia / 2} I0 J${srednicaNarzedzia / 2}
+                        //                                                 G01 Y${y - 2 * r}
+                        //                                                 G02 G17 X${srednicaNarzedzia / 2} Y${srednicaNarzedzia / 2} I${srednicaNarzedzia / 2} J0
+                        //                                                 G01 X${x - 2 * r}`);
+                        //     let iloscPrzejsc3 = r / srednicaNarzedzia;
+                        //     for (let i = 1; i < iloscPrzejsc3; i++) {
+                        //         let promienPrzejscia = srednicaNarzedzia / 2 + i * srednicaNarzedzia;
+                        //         if (i <= iloscPrzejsc3 - 1) {
+                        //             gCodeMainParts2.push(`
+                        //                                                 Y${srednicaNarzedzia}
+                        //                                                 G02 G17 X${promienPrzejscia} Y-${promienPrzejscia} I0 J-${promienPrzejscia}
+                        //                                                 G01 Y-${y - 2 * r}
+                        //                                                 G02 G17 X-${promienPrzejscia} Y-${promienPrzejscia} I-${promienPrzejscia} J0
+                        //                                                 G01 X-${x - 2 * r}
+                        //                                                 G02 G17 X-${promienPrzejscia} Y${promienPrzejscia} I0 J${promienPrzejscia}
+                        //                                                 G01 Y${y - 2 * r}
+                        //                                                 G02 G17 X${promienPrzejscia} Y${promienPrzejscia} I${promienPrzejscia} J0
+                        //                                                 G01 X${x - 2 * r}`);
+                        //         } else {
+                        //             promienPrzejscia = 0;
+                        //             gCodeMainParts2.push(`
+                        //                                                 Y${calculateRemainder(r, srednicaNarzedzia)}
+                        //                                                 G02 G17 X${promienPrzejscia} Y-${promienPrzejscia} I0 J-${promienPrzejscia}
+                        //                                                 G01 Y-${y - 2 * r}
+                        //                                                 G02 G17 X-${promienPrzejscia} Y-${promienPrzejscia} I-${promienPrzejscia} J0
+                        //                                                 G01 X-${x - 2 * r}
+                        //                                                 G02 G17 X-${promienPrzejscia} Y${promienPrzejscia} I0 J${promienPrzejscia}
+                        //                                                 G01 Y${y - 2 * r}
+                        //                                                 G02 G17 X${promienPrzejscia} Y${promienPrzejscia} I${promienPrzejscia} J0
+                        //                                                 G01 X${x - 2 * r}`);                        /// !!! to be continued
+                        //         }
+                        //     }
+                        // }
 
-                            let iloscPrzejsc1 = h / gruboscPrzejscia;
-                            let iloscPrzejsc2 = y / (2 * r);
-                            let znak = 1;
-                            if (x === 2 * r) {
-                                for (let i = 0; i < iloscPrzejsc1; i++) {
-                                    if (i <= iloscPrzejsc1 - 1) {
-                                        gCodeMainParts2.push(`
-                                                                    G01 Z-${gruboscPrzejscia + 1}`);
-                                    } else {
-                                        gCodeMainParts2.push(`
-                                                                    G01 Z-${calculateRemainder(h, gruboscPrzejscia) + 1}`);
-                                    }
-
-                                    gCodeMainParts2.push(`
-                                                                    Y${y - 2 * r}`);
-
-                                    if (i <= iloscPrzejsc1 - 1) {
-                                        gCodeMainParts2.push(`
-                                                                    Z1
-                                                                    Y-${y - 2 * r}`);
-                                    } else {
-                                        gCodeMainParts2.push(`
-                                                                    Z${h}`);
-                                    }
-                                }
-                            } else if (y === 2 * r) {
-                                for (let i = 0; i < iloscPrzejsc1; i++) {
-                                    if (i <= iloscPrzejsc1 - 1) {
-                                        gCodeMainParts2.push(`
-                                                                    G01 Z-${gruboscPrzejscia + 1}`);
-                                    } else {
-                                        gCodeMainParts2.push(`
-                                                                    G01 Z-${calculateRemainder(h, gruboscPrzejscia) + 1}`);
-                                    }
-
-                                    gCodeMainParts2.push(`
-                                                                    X${x - 2 * r}`);
-
-                                    if (i <= iloscPrzejsc1 - 1) {
-                                            gCodeMainParts2.push(`
-                                                                    Z1
-                                                                    X-${x - 2 * r}`);
-                                    } else {
-                                        gCodeMainParts2.push(`
-                                                                    Z${h}`);
-                                    }
-                                }
-                            } else {
-                                for (let i = 0; i < iloscPrzejsc1; i++) {
-                                    if (i <= iloscPrzejsc1 - 1) {
-                                        gCodeMainParts2.push(`
-                                                                    G01 Z-${gruboscPrzejscia + 1}`);
-                                    } else {
-                                        gCodeMainParts2.push(`
-                                                                    G01 Z-${calculateRemainder(h, gruboscPrzejscia) + 1}`);
-                                    }
-
-                                    gCodeMainParts2.push(`
-                                                                    X${znak * (x - 2 * r)}`);
-
-                                    for (let j = 1; j < iloscPrzejsc2; j++) {
-                                        znak *= -1;
-                                        if (j <= iloscPrzejsc2 - 1) {
-                                            gCodeMainParts2.push(`
-                                                                    Y${2 * r}
-                                                                    X${znak * (x - 2 * r)}`);
-                                        } else {
-                                            gCodeMainParts2.push(`
-                                                                    Y${calculateRemainder(y, 2 * r)}
-                                                                    X${znak * (x - 2 * r)}`);
-                                        }
-                                    }
-                                    if (znak === -1) { // 4th corner (corners are anti clockwise)
-                                        gCodeMainParts2.push(`
-                                                                    X${x - 2 * r}
-                                                                    Y-${y - 2 * r}
-                                                                    X-${x - 2 * 4}
-                                                                    Y${y - 2 * r}`);
-                                    } else { // 3rd corner
-                                        gCodeMainParts2.push(`
-                                                                    Y-${y - 2 * r}
-                                                                    X-${x - 2 * 4}
-                                                                    Y${y - 2 * r}
-                                                                    X${x - 2 * r}`);
-                                    }
-
-                                    if (i <= iloscPrzejsc1 - 1) {
-                                        if (znak === -1) {
-                                            gCodeMainParts2.push(`
-                                                                    Z1
-                                                                    G00 Y-${y - 2 * r}`);
-                                        } else {
-                                            gCodeMainParts2.push(`
-                                                                    Z1
-                                                                    G00 X-${x - 2 * r} Y-${y - 2 * r}`);
-                                        }
-                                    } else {
-                                        if (znak === -1) {
-                                            gCodeMainParts2.push(`
-                                                                    X${x / 2 - r} Y${y / 2 - r} Z1`);
-                                        } else {
-                                            gCodeMainParts2.push(`
-                                                                    X-${x / 2 - r} Y${y / 2 - r} Z1`);
-                                        }
-                                        gCodeMainParts2.push(`
-                                                                    G00 Z${h}`);
-                                    }
-                                }
-                            }
-
-                            /******************************************************************************************/
-                            gCodeMainParts1.push(gCodeMainParts2.join(`
-                            `));
-                            gCodeMainParts2 = [];
-                        }
-                            break;
-                        case `kieszeń okrągła`: {
-                            let [x0, y0, r, h, srednicaNarzedzia, gruboscPrzejscia] = i.listaWymiarow;
-                            h = h - offset2;
-                            gCodeMainParts2.push(`
-                                                                    ${gCodeCommentSign} obrobka nr. ${przygotowka.kartaObrobki.listaObrobek.indexOf(i) + 1} - kieszen okragla
-                                                                    ${gCodeCommentSign} Txxxx - wybor narzedzia o srednicy ${srednicaNarzedzia} mm
-                                                                    G00 X${x0} Y${y0}
-                                                                    Z1
-                                                                    G91`);
-
-                            let iloscPrzejsc1 = h / gruboscPrzejscia;
-                            let iloscPrzejsc2 = (2 * r - srednicaNarzedzia) / (2 * srednicaNarzedzia);
+                        let iloscPrzejsc1 = h / gruboscPrzejscia;
+                        let iloscPrzejsc2 = y / (2 * r);
+                        let znak = 1;
+                        if (x === 2 * r) {
                             for (let i = 0; i < iloscPrzejsc1; i++) {
                                 if (i <= iloscPrzejsc1 - 1) {
                                     gCodeMainParts2.push(`
@@ -641,126 +522,250 @@ const functionsKostka = {
                                                                     G01 Z-${calculateRemainder(h, gruboscPrzejscia) + 1}`);
                                 }
 
-                                for (let j = 0; j < iloscPrzejsc2; j++) {
+                                gCodeMainParts2.push(`
+                                                                    Y${y - 2 * r}`);
+
+                                if (i <= iloscPrzejsc1 - 1) {
+                                    gCodeMainParts2.push(`
+                                                                    Z1
+                                                                    Y-${y - 2 * r}`);
+                                } else {
+                                    gCodeMainParts2.push(`
+                                                                    Z${h}`);
+                                }
+                            }
+                        } else if (y === 2 * r) {
+                            for (let i = 0; i < iloscPrzejsc1; i++) {
+                                if (i <= iloscPrzejsc1 - 1) {
+                                    gCodeMainParts2.push(`
+                                                                    G01 Z-${gruboscPrzejscia + 1}`);
+                                } else {
+                                    gCodeMainParts2.push(`
+                                                                    G01 Z-${calculateRemainder(h, gruboscPrzejscia) + 1}`);
+                                }
+
+                                gCodeMainParts2.push(`
+                                                                    X${x - 2 * r}`);
+
+                                if (i <= iloscPrzejsc1 - 1) {
+                                    gCodeMainParts2.push(`
+                                                                    Z1
+                                                                    X-${x - 2 * r}`);
+                                } else {
+                                    gCodeMainParts2.push(`
+                                                                    Z${h}`);
+                                }
+                            }
+                        } else {
+                            for (let i = 0; i < iloscPrzejsc1; i++) {
+                                if (i <= iloscPrzejsc1 - 1) {
+                                    gCodeMainParts2.push(`
+                                                                    G01 Z-${gruboscPrzejscia + 1}`);
+                                } else {
+                                    gCodeMainParts2.push(`
+                                                                    G01 Z-${calculateRemainder(h, gruboscPrzejscia) + 1}`);
+                                }
+
+                                gCodeMainParts2.push(`
+                                                                    X${znak * (x - 2 * r)}`);
+
+                                for (let j = 1; j < iloscPrzejsc2; j++) {
+                                    znak *= -1;
                                     if (j <= iloscPrzejsc2 - 1) {
                                         gCodeMainParts2.push(`
-                                                                    X${srednicaNarzedzia}
-                                                                    G02 G17 X0 Y0 I-${(srednicaNarzedzia / 2) + (j * srednicaNarzedzia)} J0`);
+                                                                    Y${2 * r}
+                                                                    X${znak * (x - 2 * r)}`);
                                     } else {
                                         gCodeMainParts2.push(`
-                                                                    X${calculateRemainder(2 * r - srednicaNarzedzia, 2 * srednicaNarzedzia)}
-                                                                    G02 G17 X0 Y0 I-${r - (srednicaNarzedzia / 2)} J0`);
+                                                                    Y${calculateRemainder(y, 2 * r)}
+                                                                    X${znak * (x - 2 * r)}`);
                                     }
                                 }
-                                gCodeMainParts2.push(`
-                                                                    G00 X-${r - (srednicaNarzedzia / 2)} Z1`);
+                                if (znak === -1) { // 4th corner (corners are anti clockwise)
+                                    gCodeMainParts2.push(`
+                                                                    X${x - 2 * r}
+                                                                    Y-${y - 2 * r}
+                                                                    X-${x - 2 * 4}
+                                                                    Y${y - 2 * r}`);
+                                } else { // 3rd corner
+                                    gCodeMainParts2.push(`
+                                                                    Y-${y - 2 * r}
+                                                                    X-${x - 2 * 4}
+                                                                    Y${y - 2 * r}
+                                                                    X${x - 2 * r}`);
+                                }
 
+                                if (i <= iloscPrzejsc1 - 1) {
+                                    if (znak === -1) {
+                                        gCodeMainParts2.push(`
+                                                                    Z1
+                                                                    G00 Y-${y - 2 * r}`);
+                                    } else {
+                                        gCodeMainParts2.push(`
+                                                                    Z1
+                                                                    G00 X-${x - 2 * r} Y-${y - 2 * r}`);
+                                    }
+                                } else {
+                                    if (znak === -1) {
+                                        gCodeMainParts2.push(`
+                                                                    X${x / 2 - r} Y${y / 2 - r} Z1`);
+                                    } else {
+                                        gCodeMainParts2.push(`
+                                                                    X-${x / 2 - r} Y${y / 2 - r} Z1`);
+                                    }
+                                    gCodeMainParts2.push(`
+                                                                    G00 Z${h}`);
+                                }
+                            }
+                        }
+
+                        /******************************************************************************************/
+                        gCodeMainParts1.push(gCodeMainParts2.join(`
+                            `));
+                        gCodeMainParts2 = [];
+                    }
+                        break;
+                    case `kieszeń okrągła`: {
+                        let [x0, y0, r, h, srednicaNarzedzia, gruboscPrzejscia, f] = i.listaWymiarow;
+                        h = h - offset2;
+                        gCodeMainParts2.push(`
+                                                                    ${gCodeCommentSign} obrobka nr. ${przygotowka.kartaObrobki.listaObrobek.indexOf(i) + 1} - kieszen okragla
+                                                                    ${gCodeCommentSign} Txxxx - wybor narzedzia o srednicy ${srednicaNarzedzia} mm
+                                                                    G00 X${x0} Y${y0}
+                                                                    Z1
+                                                                    G91`);
+
+                        let iloscPrzejsc1 = h / gruboscPrzejscia;
+                        let iloscPrzejsc2 = (2 * r - srednicaNarzedzia) / (2 * srednicaNarzedzia);
+                        for (let i = 0; i < iloscPrzejsc1; i++) {
+                            if (i <= iloscPrzejsc1 - 1) {
+                                gCodeMainParts2.push(`
+                                                                    G01 Z-${gruboscPrzejscia + 1}`);
+                            } else {
+                                gCodeMainParts2.push(`
+                                                                    G01 Z-${calculateRemainder(h, gruboscPrzejscia) + 1}`);
+                            }
+
+                            for (let j = 0; j < iloscPrzejsc2; j++) {
+                                if (j <= iloscPrzejsc2 - 1) {
+                                    gCodeMainParts2.push(`
+                                                                    X${srednicaNarzedzia}
+                                                                    G02 G17 X0 Y0 I-${(srednicaNarzedzia / 2) + (j * srednicaNarzedzia)} J0`);
+                                } else {
+                                    gCodeMainParts2.push(`
+                                                                    X${calculateRemainder(2 * r - srednicaNarzedzia, 2 * srednicaNarzedzia)}
+                                                                    G02 G17 X0 Y0 I-${r - (srednicaNarzedzia / 2)} J0`);
+                                }
                             }
                             gCodeMainParts2.push(`
+                                                                    G00 X-${r - (srednicaNarzedzia / 2)} Z1`);
+
+                        }
+                        gCodeMainParts2.push(`
                                                                     Z${h}`);
 
-                            gCodeMainParts1.push(gCodeMainParts2.join(`
+                        gCodeMainParts1.push(gCodeMainParts2.join(`
                             `));
-                            gCodeMainParts2 = [];
-                        }
-                            break;
-                        case `rowek kołowy`: {
-                            let [x0, y0, R, l, h, srednicaNarzedzia, gruboscPrzejscia] = i.listaWymiarow;
-                            h = h - offset2;
-                            let wejscieX = x0 + R - l / 2 + srednicaNarzedzia / 2;
-                            gCodeMainParts2.push(`
+                        gCodeMainParts2 = [];
+                    }
+                        break;
+                    case `rowek kołowy`: {
+                        let [x0, y0, R, l, h, srednicaNarzedzia, gruboscPrzejscia, f] = i.listaWymiarow;
+                        h = h - offset2;
+                        let wejscieX = x0 + R - l / 2 + srednicaNarzedzia / 2;
+                        gCodeMainParts2.push(`
                                                                     ${gCodeCommentSign} obrobka nr. ${przygotowka.kartaObrobki.listaObrobek.indexOf(i) + 1} - rowek kolowy
                                                                     ${gCodeCommentSign} Txxxx - wybor narzedzia o srednicy ${srednicaNarzedzia} mm
                                                                     G00 X${wejscieX} Y${y0}
                                                                     Z1
                                                                     G91`);
 
-                            let iloscPrzejsc1 = h / gruboscPrzejscia;
-                            let iloscPrzejsc2 = (l - srednicaNarzedzia) / srednicaNarzedzia;
-                            if (l === srednicaNarzedzia) {
-                                gCodeMainParts2.push(`
+                        let iloscPrzejsc1 = h / gruboscPrzejscia;
+                        let iloscPrzejsc2 = (l - srednicaNarzedzia) / srednicaNarzedzia;
+                        if (l === srednicaNarzedzia) {
+                            gCodeMainParts2.push(`
                                                                     G01 Z-${gruboscPrzejscia + 1}
                                                                     G02 G17 X0 Y0 I-${wejscieX - x0} J0`);
-                                for (let i = 1; i < iloscPrzejsc1; i++) { // przejscia w Z
-                                    if (i <= iloscPrzejsc1 - 1) {
-                                        gCodeMainParts2.push(`
+                            for (let i = 1; i < iloscPrzejsc1; i++) { // przejscia w Z
+                                if (i <= iloscPrzejsc1 - 1) {
+                                    gCodeMainParts2.push(`
                                                                     G01 Z-${gruboscPrzejscia}
                                                                     G02 G17 X0 Y0 I-${wejscieX - x0} J0`);
-                                    } else {
-                                        gCodeMainParts2.push(`
+                                } else {
+                                    gCodeMainParts2.push(`
                                                                     G01 Z-${calculateRemainder(h, gruboscPrzejscia)}
                                                                     G02 G17 X0 Y0 I-${wejscieX - x0} J0`);
-                                    }
-                                }
-                            } else {
-                                for (let i = 0; i < iloscPrzejsc1; i++) { // przejscia w Z
-                                    if (i <= iloscPrzejsc1 - 1) {
-                                        gCodeMainParts2.push(`
-                                                                    G01 Z-${gruboscPrzejscia + 1}
-                                                                    G02 G17 X0 Y0 I-${wejscieX - x0} J0`);
-                                    } else {
-                                        gCodeMainParts2.push(`
-                                                                    G01 Z-${calculateRemainder(h, gruboscPrzejscia) + 1}
-                                                                    G02 G17 X0 Y0 I-${wejscieX - x0} J0`);
-                                    }
-                                    for (let j = 1; j < iloscPrzejsc2; j++) { // przejscia w XY
-                                        if (j <= iloscPrzejsc2 - 1) {
-                                            gCodeMainParts2.push(`
-                                                                    G01 X${srednicaNarzedzia}
-                                                                    G02 G17 X0 Y0 I-${wejscieX + j * srednicaNarzedzia} J0`);
-                                        } else {
-                                            gCodeMainParts2.push(`
-                                                                    X${calculateRemainder(l - srednicaNarzedzia, srednicaNarzedzia)}
-                                                                    G02 G17 X0 Y0 I-${R + l / 2 - srednicaNarzedzia / 2} J0`);
-                                        }
-                                    }
-                                    if (i <= iloscPrzejsc1 - 1) {
-                                        gCodeMainParts2.push(`
-                                                                    G00 X-${R + l / 2 - srednicaNarzedzia / 2} Z1`);
-                                    } else {
-                                        gCodeMainParts2.push(`
-                                                                    G00 X-${l / 2 + srednicaNarzedzia / 2}`);
-                                    }
                                 }
                             }
-                            gCodeMainParts2.push(`
+                        } else {
+                            for (let i = 0; i < iloscPrzejsc1; i++) { // przejscia w Z
+                                if (i <= iloscPrzejsc1 - 1) {
+                                    gCodeMainParts2.push(`
+                                                                    G01 Z-${gruboscPrzejscia + 1}
+                                                                    G02 G17 X0 Y0 I-${wejscieX - x0} J0`);
+                                } else {
+                                    gCodeMainParts2.push(`
+                                                                    G01 Z-${calculateRemainder(h, gruboscPrzejscia) + 1}
+                                                                    G02 G17 X0 Y0 I-${wejscieX - x0} J0`);
+                                }
+                                for (let j = 1; j < iloscPrzejsc2; j++) { // przejscia w XY
+                                    if (j <= iloscPrzejsc2 - 1) {
+                                        gCodeMainParts2.push(`
+                                                                    G01 X${srednicaNarzedzia}
+                                                                    G02 G17 X0 Y0 I-${wejscieX + j * srednicaNarzedzia} J0`);
+                                    } else {
+                                        gCodeMainParts2.push(`
+                                                                    X${calculateRemainder(l - srednicaNarzedzia, srednicaNarzedzia)}
+                                                                    G02 G17 X0 Y0 I-${R + l / 2 - srednicaNarzedzia / 2} J0`);
+                                    }
+                                }
+                                if (i <= iloscPrzejsc1 - 1) {
+                                    gCodeMainParts2.push(`
+                                                                    G00 X-${R + l / 2 - srednicaNarzedzia / 2} Z1`);
+                                } else {
+                                    gCodeMainParts2.push(`
+                                                                    G00 X-${l / 2 + srednicaNarzedzia / 2}`);
+                                }
+                            }
+                        }
+                        gCodeMainParts2.push(`
                                                                     Z${h}`);
 
-                            gCodeMainParts1.push(gCodeMainParts2.join(`
+                        gCodeMainParts1.push(gCodeMainParts2.join(`
                             `));
-                            gCodeMainParts2 = [];
-                        }
-                            break;
+                        gCodeMainParts2 = [];
                     }
-                    gCodeMainParts1.push(`
+                        break;
+                }
+                gCodeMainParts1.push(`
                                                                     G90
                                                                     G00 X100 Y100 Z100 ${gCodeCommentSign} dojazd w pozycje zmiany narzedzia
                                                                     ${gCodeCommentSign}`);
-                } else {
-                    switch (i.nazwa) {
-                        case `czoło`:
-                            gCodeMainParts1.push(`
+            } else {
+                switch (i.nazwa) {
+                    case `czoło`:
+                        gCodeMainParts1.push(`
                                 ${gCodeCommentSign} obrobka nr. ${przygotowka.kartaObrobki.listaObrobek.indexOf(i) + 1} - czolo - (wykluczono)`);
-                            break;
-                        case `otwór`:
-                            gCodeMainParts1.push(`
+                        break;
+                    case `otwór`:
+                        gCodeMainParts1.push(`
                                 ${gCodeCommentSign} obrobka nr. ${przygotowka.kartaObrobki.listaObrobek.indexOf(i) + 1} - otwor - (wykluczono)`);
-                            break;
-                        case `kieszeń prostokątna`:
-                            gCodeMainParts1.push(`
+                        break;
+                    case `kieszeń prostokątna`:
+                        gCodeMainParts1.push(`
                                 ${gCodeCommentSign} obrobka nr. ${przygotowka.kartaObrobki.listaObrobek.indexOf(i) + 1} - kieszen prostokatna - (wykluczono)`);
-                            break;
-                        case `kieszeń okrągła`:
-                            gCodeMainParts1.push(`
+                        break;
+                    case `kieszeń okrągła`:
+                        gCodeMainParts1.push(`
                                 ${gCodeCommentSign} obrobka nr. ${przygotowka.kartaObrobki.listaObrobek.indexOf(i) + 1} - kieszen okragla - (wykluczono)`);
-                            break;
-                        case `rowek kołowy`:
-                            gCodeMainParts1.push(`
+                        break;
+                    case `rowek kołowy`:
+                        gCodeMainParts1.push(`
                                 ${gCodeCommentSign} obrobka nr. ${przygotowka.kartaObrobki.listaObrobek.indexOf(i) + 1} - rowek kolowy - (wykluczono)`);
-                            break;
-                    }
+                        break;
                 }
             }
+        }
 
         gCodeMainParts1.push(`
                                                                     M30`);
@@ -773,12 +778,12 @@ const functionsKostka = {
     }
 };
 
-const functionsWalec = {
+const actionsWalec = {
     checkValues: function (here) {
         switch (here.nazwa) {
             case `walec`:
                 for (let i of here.listaWymiarow) {
-                    if (i === `0`) {
+                    if (i === 0) {
                         report(`Wymiary nie mogą być równe 0. `);
                         przygotowka = {};
                         etapPrzygotowki();
@@ -787,30 +792,36 @@ const functionsWalec = {
                 }
                 break;
             case `toczenie`: {
-                let [d0, d, h0, h] = here.listaWymiarow;
+                let [d0, d, h0, h, dx, u, w, f1, f2] = here.listaWymiarow;
                 if (d0 < d || d === d0) {
                     report(`Średnica końcowa nie może być większa lub równa początkowej. `);
                     toRemove = 1;
                 }
-                if (d0 === '0' || h === '0') {
-                    report(`Parametry d0 i h nie mogą być równe 0. `);
-                    toRemove = 1;
+                for (let i of [d0, h, dx, f1, f2]) {
+                    if (i === 0) {
+                        report(`Parametry "d0", "h", "dx", "f (zgr)" i "f (wyk)" nie mogą być równe 0. `);
+                        toRemove = 1;
+                    }
                 }
             }
                 break;
             case `otwór`: {
-                let [h0, h, d] = here.listaWymiarow;
-                if (d === '0' || h === '0') {
-                    report(`Parametry d i h nie mogą być równe 0. `);
-                    toRemove = 1;
+                let [h0, h, d, r, q, f] = here.listaWymiarow;
+                for (let i of [d, h, r, q, f]) {
+                    if (i === 0) {
+                        report(`Parametry "d", "h", "r", "q" i "f" nie mogą być równe 0. `);
+                        toRemove = 1;
+                    }
                 }
             }
                 break;
             case `fazowanie zewnętrzne`: {
-                let [d, h, h0] = here.listaWymiarow;
-                if (d === '0' || h === '0') {
-                    report(`Parametry d i h nie mogą być równe 0. `);
-                    toRemove = 1;
+                let [d, h, h0, dx, u, w, f1, f2] = here.listaWymiarow;
+                for (let i of [d, h, dx, f1, f2]) {
+                    if (i === 0) {
+                        report(`Parametry "d", "h", "dx", "f (zgr)" i "f (wyk)" nie mogą być równe 0. `);
+                        toRemove = 1;
+                    }
                 }
                 if (d / 2 < h) {
                     report(`Parametr h nie może być większy od połowy średnicy. Proszę zastosować toczenie. `);
@@ -819,18 +830,22 @@ const functionsWalec = {
             }
                 break;
             case `fazowanie wewnętrzne`: {
-                let [d, h, h0] = here.listaWymiarow;
-                if (d === '0' || h === '0') {
-                    report(`Parametry d i h nie mogą być równe 0. `);
-                    toRemove = 1;
+                let [d, h, h0, dx, u, w, f1, f2] = here.listaWymiarow;
+                for (let i of [d, h, dx, f1, f2]) {
+                    if (i === 0) {
+                        report(`Parametry "d", "h", "dx", "f (zgr)" i "f (wyk)" nie mogą być równe 0. `);
+                        toRemove = 1;
+                    }
                 }
             }
                 break;
             case `rowek wzdłużny`: {
-                let [d0, d, h0, h] = here.listaWymiarow;
-                if (d0 === '0' || h === '0') {
-                    report(`Parametry d0 i h nie mogą być równe 0. `);
-                    toRemove = 1;
+                let [d0, d, h0, h, r, p, q, f] = here.listaWymiarow;
+                for (let i of [d0, h, r, p, q, f]) {
+                    if (i === 0) {
+                        report(`Parametry "d0", "h", "r", "p", "q" i "f" nie mogą być równe 0. `);
+                        toRemove = 1;
+                    }
                 }
                 if (d0 < d || d === d0) {
                     report(`Średnica końcowa nie może być większa lub równa początkowej. `);
@@ -839,19 +854,18 @@ const functionsWalec = {
             }
                 break;
             case `rowek czołowy`: {
-                let [d0, d, h0, h] = here.listaWymiarow;
-                if (d0 === '0' || h === '0') {
-                    report(`Parametry d0 i h nie mogą być równe 0. `);
-                    toRemove = 1;
+                let [d0, d, h0, h, r, q, p, f] = here.listaWymiarow;
+                for (let i of [d0, h, r, p, q, f]) {
+                    if (i === 0) {
+                        report(`Parametry "d0", "h", "r", "q", "p" i "f" nie mogą być równe 0. `);
+                        toRemove = 1;
+                    }
                 }
                 if (d0 < d || d === d0) {
                     report(`Średnica końcowa nie może być większa lub równa początkowej. `);
                     toRemove = 1;
                 }
             }
-                break;
-            default:
-                report(`functionsWalec -> checkValues -> switch default (${here.nazwa})`);
                 break;
         }
     },
@@ -1061,79 +1075,192 @@ const functionsWalec = {
                                                                     G90
                                                                     G00 Z100 X100 ${gCodeCommentSign} dojazd w pozycje zmiany narzedzia`);
 
+        NQ = 0; // resets countN();
+
         for (let i of przygotowka.kartaObrobki.listaObrobek) {
             if (przygotowka.kartaObrobki.aktywne[przygotowka.kartaObrobki.listaObrobek.indexOf(i)]) {
                 switch (i.nazwa) {
                     case `toczenie`: {
-                        let [d0, d, h0, h, dx] = i.listaWymiarow;
+                        let [d0, d, h0, h, dx, u, w, f1, f2] = i.listaWymiarow;
+                        countN();
+                        /* version 1
                         gCodeMainParts2.push(`
-                                                                    ${gCodeCommentSign} obrobka nr. ${przygotowka.kartaObrobki.listaObrobek.indexOf(i) + 1} - toczenie`);
+                            ${gCodeCommentSign} obrobka nr. ${przygotowka.kartaObrobki.listaObrobek.indexOf(i) + 1} - toczenie
+                            ${gCodeCommentSign} Txxxx - nalezy wybrac narzedzie
+                            X${d0} Z${- h0 + 1}
+                            G71 U${dx / 2} R1
+                            G71 P${NP} Q${NQ} U${u} W${w} F${f1}
+                            N${NP} G01 X${d}
+                            Z${- (h0 + h)}
+                            N${NQ} X${d0}
+                            G70 P${NP} Q${NQ} F${f2});
 
-
-
-                        gCodeMainParts1.push(gCodeMainParts2.join(`
-                        `));
-                        gCodeMainParts2 = [];
+                        //gCodeMainParts1.push(gCodeMainParts2.join(`
+                        //`));
+                        //gCodeMainParts2 = [];
+                        */
+                        /* version 2 */
+                        let intro = `
+                            ${gCodeCommentSign} obrobka nr. ${przygotowka.kartaObrobki.listaObrobek.indexOf(i) + 1} - toczenie
+                            ${gCodeCommentSign} Txxxx - nalezy wybrac narzedzie
+                            `;
+                        let elementsStrings = [
+                            `X`, ` Z`, `
+                            G71 U`, ` R1
+                            G71 P`, ` Q`, ` U`, ` W`, ` F`, `
+                            N`, ` G01 X`, `
+                            Z`, `
+                            N`, ` X`, `
+                            G70 P`, ` Q`, ` F`
+                        ];
+                        let elementsValues = [
+                            d0, -h0 + 1,
+                            dx / 2,
+                            NP, NQ, u, w, f1,
+                            NP, d,
+                            -(h0 + h),
+                            NQ, d0,
+                            NP, NQ, f2
+                        ];
+                        let elementsTotal = elementsStrings.map((e, i) => {
+                            return e + elementsValues[i]
+                        });
+                        let completeString = (intro + elementsTotal.join(``)).replaceAll(/ {2}/ig, '');
+                        gCodeMainParts1.push(completeString);
                     }
                         break;
                     case `otwór`: {
-                        let [d, h] = i.listaWymiarow;
-                        gCodeMainParts2.push(`
-                                                                    ${gCodeCommentSign} obrobka nr. ${przygotowka.kartaObrobki.listaObrobek.indexOf(i) + 1} - otwor`);
-
-
-
-                        gCodeMainParts1.push(gCodeMainParts2.join(`
-                        `));
-                        gCodeMainParts2 = [];
+                        let [h0, h, d, r, q, f] = i.listaWymiarow;
+                        let pyptyk = d / 4 * Math.tan(30 * Math.PI / 180);
+                        let intro = `
+                            ${gCodeCommentSign} obrobka nr. ${przygotowka.kartaObrobki.listaObrobek.indexOf(i) + 1} - otwor
+                            ${gCodeCommentSign} Txxxx - nalezy wybrac narzedzie o srednicy ${d} mm
+                            `;
+                        let elementsStrings = [
+                            `X0 Z`, `
+                            G74 R`, `
+                            G74 Z`, ` Q`, ` F`
+                        ];
+                        let elementsValues = [
+                            -h0 + 1 + pyptyk,
+                            r,
+                            -(h + 1 + pyptyk), q, f
+                        ];
+                        let elementsTotal = elementsStrings.map((e, i) => {
+                            return e + elementsValues[i]
+                        });
+                        let completeString = (intro + elementsTotal.join(``)).replaceAll(/ {2}/ig, '');
+                        gCodeMainParts1.push(completeString);
                     }
                         break;
                     case `fazowanie zewnętrzne`: {
-                        let [d, h, h0] = i.listaWymiarow;
-                        gCodeMainParts2.push(`
-                                                                    ${gCodeCommentSign} obrobka nr. ${przygotowka.kartaObrobki.listaObrobek.indexOf(i) + 1} - fazowanie zewnetrzne`);
-
-
-
-                        gCodeMainParts1.push(gCodeMainParts2.join(`
-                        `));
-                        gCodeMainParts2 = [];
+                        let [d, h, h0, dx, u, w, f1, f2] = i.listaWymiarow;
+                        countN();
+                        let intro = `
+                            ${gCodeCommentSign} obrobka nr. ${przygotowka.kartaObrobki.listaObrobek.indexOf(i) + 1} - fazowanie zewnetrzne
+                            ${gCodeCommentSign} Txxxx
+                            `;
+                        let elementsStrings = [
+                            `X`, ` Z`, `
+                            G71 U`, ` R1
+                            G71 P`, ` Q`, ` U`, ` W`, ` F`, `
+                            N`, ` G01 X`, `
+                            Z`, `
+                            N`, ` X`, ` Z`, `
+                            G70 P`, ` Q`, ` F`
+                        ];
+                        let elementsValues = [
+                            d, -h0 + 1,
+                            dx / 2,
+                            NP, NQ, u, w, f1,
+                            NP, d - 2 * h,
+                            -1,
+                            NQ, d, -h,
+                            NP, NQ, f2
+                        ];
+                        let elementsTotal = elementsStrings.map((e, i) => {
+                            return e + elementsValues[i]
+                        });
+                        let completeString = (intro + elementsTotal.join(``)).replaceAll(/ {2}/ig, '');
+                        gCodeMainParts1.push(completeString);
                     }
                         break;
                     case `fazowanie wewnętrzne`: {
-                        let [d, h, h0] = i.listaWymiarow;
-                        gCodeMainParts2.push(`
-                                                                    ${gCodeCommentSign} obrobka nr. ${przygotowka.kartaObrobki.listaObrobek.indexOf(i) + 1} - fazowanie wewnetrzne`);
-
-
-
-                        gCodeMainParts1.push(gCodeMainParts2.join(`
-                        `));
-                        gCodeMainParts2 = [];
+                        let [d, h, h0, dx, u, w, f1, f2] = i.listaWymiarow;
+                        countN();
+                        let intro = `
+                            ${gCodeCommentSign} obrobka nr. ${przygotowka.kartaObrobki.listaObrobek.indexOf(i) + 1} - fazowanie wewnetrzne
+                            ${gCodeCommentSign} Txxxx
+                            `;
+                        let elementsStrings = [
+                            `X`, ` Z`, `
+                            G71 U`, ` R1
+                            G71 P`, ` Q`, ` U`, ` W`, ` F`, `
+                            N`, ` G01 X`, `
+                            Z`, `
+                            N`, ` X`, ` Z`, `
+                            G70 P`, ` Q`, ` F`
+                        ];
+                        let elementsValues = [
+                            d, -h0 + 1,
+                            dx / 2,
+                            NP, NQ, -u, w, f1,
+                            NP, d + 2 * h,
+                            -1,
+                            NQ, d, -h,
+                            NP, NQ, f2
+                        ];
+                        let elementsTotal = elementsStrings.map((e, i) => {
+                            return e + elementsValues[i]
+                        });
+                        let completeString = (intro + elementsTotal.join(``)).replaceAll(/ {2}/ig, '');
+                        gCodeMainParts1.push(completeString);
                     }
                         break;
                     case `rowek wzdłużny`: {
-                        let [d0, d, h0, h] = i.listaWymiarow;
-                        gCodeMainParts2.push(`
-                                                                    ${gCodeCommentSign} obrobka nr. ${przygotowka.kartaObrobki.listaObrobek.indexOf(i) + 1} - rowek wzdluzny`);
-
-
-
-                        gCodeMainParts1.push(gCodeMainParts2.join(`
-                        `));
-                        gCodeMainParts2 = [];
+                        let [d0, d, h0, h, r, p, q, f] = i.listaWymiarow;
+                        let intro = `
+                            ${gCodeCommentSign} obrobka nr. ${przygotowka.kartaObrobki.listaObrobek.indexOf(i) + 1} - rowek wzdluzny
+                            ${gCodeCommentSign} Txxxx - nalezy wybrac wytaczak o szerokosci plytki ${q / 1000} mm
+                            `;
+                        let elementsStrings = [
+                            `X`, ` Z`, `
+                            G75 R`, `
+                            G75 X`, ` Z`, ` P`, ` Q`, ` F`
+                        ];
+                        let elementsValues = [
+                            d0 + 2, -(h0 + h),
+                            r,
+                            d, -(h0 + q), p, q, f
+                        ];
+                        let elementsTotal = elementsStrings.map((e, i) => {
+                            return e + elementsValues[i]
+                        });
+                        let completeString = (intro + elementsTotal.join(``)).replaceAll(/ {2}/ig, '');
+                        gCodeMainParts1.push(completeString);
                     }
                         break;
                     case `rowek czołowy`: {
-                        let [d0, d, h0, h] = i.listaWymiarow;
-                        gCodeMainParts2.push(`
-                                                                    ${gCodeCommentSign} obrobka nr. ${przygotowka.kartaObrobki.listaObrobek.indexOf(i) + 1} - rowek czolowy`);
-
-
-
-                        gCodeMainParts1.push(gCodeMainParts2.join(`
-                        `));
-                        gCodeMainParts2 = [];
+                        let [d0, d, h0, h, r, q, p, f] = i.listaWymiarow;
+                        let intro = `
+                            ${gCodeCommentSign} obrobka nr. ${przygotowka.kartaObrobki.listaObrobek.indexOf(i) + 1} - rowek czolowy
+                            ${gCodeCommentSign} Txxxx - nalezy wybrac wytaczak o szerokosci plytki ${p / 1000} mm
+                            `;
+                        let elementsStrings = [
+                            `X`, ` Z`, `
+                            G74 R`, `
+                            G74 X`, ` Z`, ` Q`, ` P`, ` F`
+                        ];
+                        let elementsValues = [
+                            d0, -h0 + 1,
+                            r,
+                            d + p, h, q, p, f
+                        ];
+                        let elementsTotal = elementsStrings.map((e, i) => {
+                            return e + elementsValues[i]
+                        });
+                        let completeString = (intro + elementsTotal.join(``)).replaceAll(/ {2}/ig, '');
+                        gCodeMainParts1.push(completeString);
                     }
                         break;
                 }
@@ -1167,11 +1294,10 @@ const functionsWalec = {
             }
 
             gCodeMainParts1.push(`
-                                                                    G90
                                                                     G00 Z100 X100 ${gCodeCommentSign} dojazd w pozycje zmiany narzedzia
                                                                     ${gCodeCommentSign}`);
         }
-        gCodeMainParts2.push(`
+        gCodeMainParts1.push(`
                                                                     M30`);
 
         gCodeMain = gCodeMainParts1.join(`
@@ -1182,16 +1308,16 @@ const functionsWalec = {
     }
 };
 
-let manipulate = {}; // functions for generating OpenJSCAD code are stored here in the form of methods. Becomes one of two objects with same methods for different code-writing purposes depending on przygotowka
+let action = {}; // depending on "przygotowka", one of objects with main methods is stored here (at "setFunctions()")
 
 function setFunctions() {
     switch (przygotowka.nazwa) {
         case `kostka`:
-            manipulate = {...functionsKostka};
+            action = {...actionsKostka};
             report(`Ustawiono funkcje dla kostki. `);
             break;
         case `walec`:
-            manipulate = {...functionsWalec};
+            action = {...actionsWalec};
             report(`Ustawiono funkcje dla walca. `);
             break;
         default:
@@ -1208,14 +1334,21 @@ function calculateRemainder(a, b) {
     return (a * 1000) % (b * 1000) / 1000;
 }
 
+let NP, NQ = 0;
 
-// DOM manipulations: (функции, передаваемые в nextStep и previousStep находятся вне видимости внутри функций, в которые они передаются)
+function countN() {
+    NP = NQ + 10;
+    NQ = NP + 10;
+}
+
+
+// DOM manipulations: (works as is, much good, NO TOUCH! Held functions should be there)
 function loadList(loadOf, nextStep) {
 
-    //for "wstecz"
+    // for "wstecz"
     clearHTML(elements.inputsList); // this line is useful only after "wstecz"
     clearHTML(elements.upperField);
-    elements.upperField.appendChild(elements.choicesList); // choicesList was there already before clearing at previous line, but this should be done to enable "wstecz"
+    elements.upperField.appendChild(elements.choicesList); // "choicesList" was there already before clearing at previous line, but this should be done to enable "wstecz"
 
     clearHTML(elements.choicesList);
     for (let i of loadOf) {
@@ -1237,41 +1370,67 @@ function loadList(loadOf, nextStep) {
 }
 
 function loadInput(clicked, loadOf, nextStep, previousStep) {
-    let variable = {};
+
+    let option = {};
+
+    // determining what option has been chosen, is stored to "option"
     for (let i of loadOf) {
         if (i.nazwa === clicked.innerHTML) {
-            variable = JSON.parse(JSON.stringify(i));
+            option = JSON.parse(JSON.stringify(i));
         }
     }
-    elements.upperField.innerHTML = `${variable.opis}`;
+
+    // "rightList" and "dataInput" text, input fields
+    elements.upperField.innerHTML = `${option.opis}`;
     clearHTML(elements.inputsList);
-    for (let i of variable.nazwyWymiarow) {
+    for (let i of option.nazwyWymiarow) {
         modifyHTML(elements.inputsList, `
             <li>${i}<br>
             <input type="text"></li>
         `);
     }
+
+    // buttons
     modifyHTML(elements.inputsList, `<div class="header-1 d-md-flex justify-content-md-evenly"><button class="btn btn-outline-dark btn-sm" id="wstecz">Wstecz</button><button class="btn btn-outline-dark btn-sm" id="getInput">Zapisz</button></div>`);
     elements.wstecz = document.getElementById('wstecz');
     elements.getInput = document.getElementById('getInput');
     elements.wstecz.addEventListener('click', previousStep);
     elements.getInput.addEventListener('click', nextStep);
 
-    return variable;
+    return option;
 }
 
 function processInput(loadTo) {
+
     for (let i = 0; i < elements.inputs.length; i++) {
-        let val = parseFloat(elements.inputs[i].value);
+
+        let val = null;
+
+        // sets "val", turns comma to point
+        if (elements.inputs[i].value.includes(`,`)) {
+            val = parseFloat(elements.inputs[i].value.toString().replaceAll(/,/g, `.`));
+        } else {
+            val = parseFloat(elements.inputs[i].value);
+        }
+
+        // checks if input ("val") is a number, if not - prevents the creation of "obrobka"
         if (isNaN(val)) {
             report(`Wymiary muszą być w postaci liczb. `);
             toRemove = 1;
             return;
         }
+
+        // stores input where it belongs
         loadTo.listaWymiarow[i] = val;
     }
-    manipulate.checkValues(loadTo);
+
+    // checks if input is suiting for specific chosen "obrobka", if not - sends a signal ("toRemove"), which will be processed later and this "obrobka" will be removed
+    action.checkValues(loadTo);
+
+    // checks if this "obrobka" already exists (any small change in input (stored) values is enough to pass through this), if it does - "toRemove"
+    // if no "toRemove" is triggered - .push "obrobka" to a place in "przygotowka", together with an active flag. "obrobka" cleared
     if (loadTo === obrobka) {
+
         for (let i of przygotowka.kartaObrobki.listaObrobek) {
             if (i.nazwa === obrobka.nazwa) {
                 if (i.listaWymiarow.every((val, num) => val === obrobka.listaWymiarow[num])) {
@@ -1280,37 +1439,37 @@ function processInput(loadTo) {
                 }
             }
         }
+
         if (toRemove === 0) {
             przygotowka.kartaObrobki.listaObrobek.push(loadTo);
             przygotowka.kartaObrobki.aktywne.push(true);
         }
+
         obrobka = {};
     }
+
+    // clears sections, brings "choicesList" back
     clearHTML(elements.inputsList);
     clearHTML(elements.upperField);
     elements.upperField.appendChild(elements.choicesList); // only a template, will be filled later
 }
 
 function proceed(obj) {
+
     if (obj === przygotowka) {
         setFunctions();
     }
-    processInput(obj); // checks for suitable input, stores input values in object, clears lower section, !rewrites upper section with choices already with listeners! . In case of obrobka, stores obrobka in przygotowka
+
+    processInput(obj); // checks for suitable input, stores input in object, clears lower section, rewrites upper section with choices already with listeners. In case of "obrobka", stores it in "przygotowka"
     if (toRemove === 1) {
         toRemove = 0;
         return;
     }
+
     uploadHistory();
-    manipulate.generateCodeFromScratch(); // rewrites code each time. Not much work cuz figure is redrawn anyways.
-    // or
-    /*
-    if (obj === przygotowka) {
-        manipulate.generatePrzygotowkaCode();
-    } else if (obj === obrobka) {
-        manipulate.generateObrobkaCode();
-    }
-     */
+    action.generateCodeFromScratch(); // rewrites code each time. Not much work because figure is redrawn anyways
     drawModel();
+
     if (obj === przygotowka) {
         etapObrobki();
     }
@@ -1325,13 +1484,10 @@ function report2(msg) {
 }
 
 function uploadHistory() {
+
     clearHTML(elements.history);
     modifyHTML(elements.history, `<li>${przygotowka.nazwa}</li>`);
-    /*
-    for (let i = 0; i < przygotowka.kartaObrobki.listaObrobek.length; i++) {
-        modifyHTML(elements.history, `<li>${i + 1}. ${przygotowka.kartaObrobki.listaObrobek[i].nazwa}</li>`);
-    }
-    */ // this way did not work o_O
+
     for (let i of przygotowka.kartaObrobki.listaObrobek) {
         if (przygotowka.kartaObrobki.aktywne[przygotowka.kartaObrobki.listaObrobek.indexOf(i)]) {
             if (przygotowka.kartaObrobki.listaObrobek[przygotowka.kartaObrobki.listaObrobek.indexOf(i)].nazwa === 'czoło') {
@@ -1348,9 +1504,10 @@ function uploadHistory() {
             }
         }
     }
+
     for (let e of elements.points) {
-        e.addEventListener('click', catchFromHistoryClick); //deactivating an element
-        e.addEventListener('mouseenter', catchFromHistoryEnter); //drawing only that element
+        e.addEventListener('click', catchFromHistoryClick);
+        e.addEventListener('mouseenter', catchFromHistoryEnter);
         e.addEventListener('mouseleave', catchFromHistoryLeave);
 
         // style
@@ -1363,100 +1520,57 @@ function uploadHistory() {
     }
 }
 
+let target = null;
+let index = ``;
+
 function catchFromHistoryClick() {
+
     if (this.innerHTML === przygotowka.nazwa) {
         return;
     }
-    przygotowka.kartaObrobki.aktywne[parseFloat(this.innerHTML[0]) - 1] = !przygotowka.kartaObrobki.aktywne[parseFloat(this.innerHTML[0]) - 1];
-    manipulate.generateCodeFromScratch();
+
+    // switches active flag
+    przygotowka.kartaObrobki.aktywne[index] = !przygotowka.kartaObrobki.aktywne[index];
+
+    action.generateCodeFromScratch();
     drawModel();
     uploadHistory();
 }
 
-let target = null;
-let index = null;
 function catchFromHistoryEnter() {
-    if (isNaN(parseFloat(this.innerHTML[0]))) {
+
+    if (this.innerHTML === przygotowka.nazwa) {
         return;
     }
 
-    index = parseFloat(this.innerHTML[0]) - 1;
+    // gets full index, not only one digit
+    for (let i = 0; i < this.innerHTML.toString().indexOf(`.`); i++) {
+        index += this.innerHTML.toString()[i];
+    }
+    index = parseFloat(index) - 1;
+
     target = przygotowka.kartaObrobki.listaObrobek[index];
 
-    manipulate.highlight(target);
+    action.highlight(target);
     drawModel();
 }
 
 function catchFromHistoryLeave() {
-    if (isNaN(parseFloat(this.innerHTML[0]))) {
+
+    if (this.innerHTML === przygotowka.nazwa) {
         return;
     }
 
-    manipulate.generateCodeFromScratch();
+    action.generateCodeFromScratch();
     drawModel();
 
-    index = null;
+    index = ``;
     target = null;
 }
 
-/*
-function store() {
-    if (przygotowka === {} || listaPrzygotowek.forEach(p => przygotowka === p)) {
-        return;
-    }
-    listaPrzygotowek.push(przygotowka);
-    modifyHTML(elements.openedFilesList, `<li>${listaPrzygotowek.length}</li>`);
-    elements.openedFiles.addEventListener('click', () => {
-        przygotowka = listaPrzygotowek[this.innerHTML - 1];
-        setTimeout(manipulate.generateCodeFromScratch(), 1000);
-    });
-}
-*/
-
-
 
 // Main line:
-/*
-function guide() {
-    let headerGuideText = `header guide text`;
-    let leftListGuideText = `leftList guide text`;
-    let drawingGuideText = `drawing guide text`;
-    let rightListGuideText = `rightList guide text`;
-    let dataInputGuideText = `dataInput guide text`;
-    let footerGuideText = `footer guide text`;
-
-    document.getElementsByTagName('body').innerHTML += `
-<div id="guide">
-    <div id="guide-header">
-    </div>
-    <div id="guide-leftList">
-    </div>
-    <div id="guide-drawing">
-    </div>
-    <div id="guide-rightList">
-    </div>
-    <div id="guide-dataInput">
-    </div>
-    <div id="guide-footer">
-    </div>
-</div>`;
-
-    let guide = document.getElementById('guide');
-    let headerGuide = document.getElementById('guide-header');
-    let leftListGuide = document.getElementById('guide-leftList');
-    let drawingGuide = document.getElementById('guide-drawing');
-    let rightListGuide = document.getElementById('guide-rightList');
-    let dataInputGuide = document.getElementById('guide-dataInput');
-    let footerGuide = document.getElementById('guide-footer');
-
-    // action
-
-    // add a listener to a created button onClick -> etapPrzygotowki
-
-}
-*/
-
-function etapPrzygotowki() { // можно создать одну переменную, которая будет принимать одну из двух функций в зависимости от того, для какого она должна быть объекта
+function etapPrzygotowki() {
 
     if (Object.keys(przygotowka).length !== 0) {
         exportObject();
@@ -1470,7 +1584,7 @@ function etapPrzygotowki() { // можно создать одну переме�
     }
 
     function step2() {
-        przygotowka = loadInput(this, dostepnePrzygotowki, step3, step1); // picks object by clicked item, !rewrites upper section with "opis"! , clears lower section, adds names, input fields and a button, adds listener
+        przygotowka = loadInput(this, dostepnePrzygotowki, step3, step1); // picks object by clicked item, rewrites upper section with "opis", clears lower section, adds names, input fields and buttons, adds listener
         report2(`Wpisz wymiary. `);
     }
 
@@ -1500,13 +1614,14 @@ function etapObrobki() {
 }
 
 
-
 // Exports and imports:
 function exportObject() {
+
     if (Object.keys(przygotowka).length === 0 || przygotowka.listaWymiarow[0] === undefined) {
         report(`Próba eksportować model. Model pusty. `);
         return;
     }
+
     let a = document.createElement('a');
     a.href = "data:application/octet-stream," + encodeURIComponent(JSON.stringify(przygotowka));
     a.download = `${przygotowka.nazwa} (${dateTimeFormat(1)}).txt`;
@@ -1514,25 +1629,32 @@ function exportObject() {
 }
 
 function importObject(event) {
+
     if (Object.keys(przygotowka).length !== 0) {
         exportObject();
     }
+
     const input = event.target;
     if ('files' in input && input.files.length > 0) {
         parseFileContent(input.files[0]);
     }
+
     setTimeout(() => { // waiting for promise, not for parse (yes, they are asynchronous)
+
         if (Object.keys(przygotowka).length === 0) {
             report('Próba importować model. Plik pusty. ');
             openjscadCode = ``;
             drawModel();
             return;
         }
+
         report(`Przygotówkę załadowano. `);
+
         uploadHistory();
         setFunctions();
-        manipulate.generateCodeFromScratch();
+        action.generateCodeFromScratch();
         drawModel();
+
         switch (przygotowka.nazwa) {
             case `kostka`:
                 przygotowka.kartaObrobki.dostepneObrobki = kostka.kartaObrobki.dostepneObrobki;
@@ -1544,41 +1666,31 @@ function importObject(event) {
                 report(`Przygotówkę nie rozpoznano: "${przygotowka.nazwa}". `);
                 break;
         }
+
         etapObrobki();
     }, 100);
 }
 
 function parseFileContent(file) {
     readFileContent(file).then(content => {
-        przygotowka = JSON.parse(content); // в чём проблема?
-        /* there will be an error in condition; also should be a type and version checker of all przygotowka objects
-        if (przygotowka.displayInfo() !== dostepnePrzygotowki[0].displayInfo()) {
-            przygotowka = {};
-            report(`Nieprawidłowy format importowanego pliku.
-Akceptowalny format: ${dostepnePrzygotowki[0].displayInfo()}
-Format wgranego pliku: ${przygotowka.displayInfo()}`);
-        }*/
-    }).catch(error => {
-        console.log(error);
+        przygotowka = JSON.parse(content);
+    }).catch(() => {
         report(`Błąd odczytu pliku. `);
     });
-    // сделать потом через промисы и отдать в then после выполнения этой функции в предыдущей
 }
 
 function readFileContent(file) {
     const reader = new FileReader();
     return new Promise((resolve, reject) => {
-        reader.onload = event => resolve(event.target.result); // what is a) onload, b) event, c) param in resolve() ?
+        reader.onload = event => resolve(event.target.result);
         reader.onerror = error => reject(error);
-        reader.readAsText(file); // why is readAsText() here and reader is declared before ?
+        reader.readAsText(file);
     })
 }
 
 
-
 // Activation:
 function bindListeners() {
-    // Class "header":
     elements.btnStart.addEventListener('click', etapPrzygotowki);
     elements.btnGenerateGCode.addEventListener('click', function () {
         if (Object.keys(przygotowka).length === 0 || przygotowka.listaWymiarow[0] === undefined || przygotowka.kartaObrobki.listaObrobek[0] === undefined || przygotowka.kartaObrobki.listaObrobek[0].listaWymiarow[0] === undefined) {
@@ -1586,12 +1698,13 @@ function bindListeners() {
             return;
         }
 
-        manipulate.generateGCode();
+        action.generateGCode();
         let a = document.createElement('a');
         a.href = "data:application/octet-stream," + encodeURIComponent(gCode);
         a.download = `g-code ${przygotowka.nazwa} (${dateTimeFormat(1)}).txt`;
         a.click();
 
+        let doPorownania = ``;
         doPorownania += `
 ${przygotowka.nazwa}: `;
         for (let i = 0; i < przygotowka.nazwyWymiarow.length; i++) {
@@ -1617,15 +1730,7 @@ ${i + 1}. ${przygotowka.kartaObrobki.listaObrobek[i].nazwa}: `;
     elements.btnExport.addEventListener('click', exportObject);
     elements.inputFile.addEventListener('change', importObject);
     elements.btnHelp.addEventListener('click', showHelp);
-    // Class "viewsList":
-    /*
-    for (let i = 0; i < elements.views.length; i++) {
-        elements.views[i].addEventListener('click', selectPerspective);
-    }
-    */
-    // Class "footer":
 }
-
 
 function showHelp() {
 
@@ -1661,7 +1766,8 @@ function showHelp() {
                 W tym polu pojawiają się dostępne przygotówki i elementy dostępne do wykonania, które można wybrać klikając na nie.
             </div>
             <div class="dataInput border border-2 border-primary rounded-1 p-1">
-                W tym polu, po wybraniu przygotówki lub elementu, pojawiają się pola do wpisywania ich wymiarów, i przyciski "Wstecz" i "Zapisz". Pierwszy przycisk przywraca listę przygotówek czy elementów w polu wyżej, drugi zapisuje wpisane dane. Zaraz po wciśnięciu przycisku "Zapisz" generuje się model.
+                W tym polu, po wybraniu przygotówki lub elementu, pojawiają się pola do wpisywania ich wymiarów, i przyciski "Wstecz" i "Zapisz". Pierwszy przycisk przywraca listę przygotówek czy elementów w polu wyżej, drugi zapisuje wpisane dane. Zaraz po wciśnięciu przycisku "Zapisz" generuje się model. <br>
+                Wartości należy podawać w milimetrach, jeśli nie podane są inne jednostki.
             </div>
             <div class="footer border border-2 border-primary rounded-1 p-1">
                 W tym polu wyświetlają się komunikaty przy błędach, n.p. jeśli jako długość przygotówki zostanie wprowadzone zero.
@@ -1673,7 +1779,7 @@ function showHelp() {
     </div>
     `;
 
-    // listening to button click -> loading page
+    // listening to button click to load the page
     document.getElementById(`close-help-page`).addEventListener(`click`, () => {
         elements.page.innerHTML = ``;
         elements.page.appendChild(elements.mainPage);
@@ -1683,31 +1789,3 @@ function showHelp() {
 }
 
 bindListeners();
-
-/*
-{
-const array1 = [];
-for (let i = 1; i <= 4; i++) {
-    array1.push({
-        nazwa: `object ${i}`,
-        opis: `blabla`,
-        wymiary: [1, 2, 3, 4]
-    });
-}
-console.log(array1);
-
-const array2 = [];
-for (let i = 1; i <= 4; i++) {
-    array2.push(1);
-}
-console.log(array2);
-
-const map1 = array1.map(e1 => {
-    if (array2[array1.indexOf(e1)] === 1) {
-        return `${e1.nazwa} ${e1.wymiary}`;
-    }
-});
-
-console.log(map1);
-}
- */
