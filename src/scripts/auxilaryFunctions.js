@@ -26,25 +26,6 @@ export function makeActive(option) {
 }
 */
 
-/*
-export function generateGCode(przygotowka) {
-    let a = przygotowka.value;
-    let b = a.kartaObrobki.listaObrobek;
-    let c = ``;
-
-    for (let i of b) {
-        console.log(i);
-        if (i.nazwa === `otwor`) {
-            c +=
-                `T0000 # Wybrać wiertło o średnicy ${i.listaWymiarow[2]}
-                G00 X${i.listaWymiarow[0]} Y${i.listaWymiarow[1]} Z02
-                G01 Z${i.listaWymiarow[3]}
-                G01 Z02`;
-        }
-    }
-}
-*/
-
 export function dateTimeFormat(n) {
 
     let _year = new Date().getFullYear();

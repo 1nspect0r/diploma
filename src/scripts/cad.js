@@ -9,4 +9,3 @@ AlertUserOfUncaughtExceptions();
 
 let viewer = document.getElementById('viewerContext');
 export const gProcessor = new Processor(viewer);
-
