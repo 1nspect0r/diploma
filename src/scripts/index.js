@@ -427,16 +427,15 @@ const actionsKostka = {
                     case `otwór`: {
                         let [x, y, d, h, f] = i.listaWymiarow;
                         h = h - offset;
-                        let pyptyk = d / 4 * Math.tan(30 * Math.PI / 180);
                         gCodeMainParts2 = [
                             `(obrobka nr. ${przygotowka.kartaObrobki.listaObrobek.indexOf(i) + 1} - otwor)`,
                             `(Txxxx M6 - wybor narzedzia o srednicy ${d} mm i wymiana)`,
                             `G00 X${x} Y${y}`,
-                            `Z${1 + pyptyk}`,
+                            `Z1`,
                             `G91`,
-                            `G01 Z-${h + 1 + pyptyk} F${f}`,
-                            `Z${h + 1 + pyptyk}`
-                        ]; // pyptyk everywhere because it was added before G91!
+                            `G01 Z${-(h + 1)} F${f}`,
+                            `Z${h + 1}`
+                        ];
 
                         gCodeMainParts1.push(gCodeMainParts2.join(`
                             `));
@@ -1045,7 +1044,7 @@ const actionsWalec = {
                             dx / 2,
                             NP, NQ, u, w, f1,
                             NP, d,
-                            -(h0 + h),
+                            h0 + h,
                             NQ, d0,
                             NP, NQ, f2
                         ];
@@ -1061,7 +1060,6 @@ const actionsWalec = {
                         break;
                     case `otwór`: {
                         let [h0, h, d, r, q, f, s] = i.listaWymiarow;
-                        let pyptyk = d / 4 * Math.tan(30 * Math.PI / 180);
                         let intro = `
                             (obrobka nr. ${przygotowka.kartaObrobki.listaObrobek.indexOf(i) + 1} - otwor)
                             (Txxxx M6 - wybor wiertla o srednicy ${d} mm i wymiana)
@@ -1073,9 +1071,9 @@ const actionsWalec = {
                             G74 Z`, ` Q`, ` F`
                         ];
                         let elementsValues = [
-                            -h0 + 1 + pyptyk,
+                            -h0 + 1,
                             r,
-                            -(h + 1 + pyptyk), q, f
+                            h + 1, q, f
                         ];
                         let elementsTotal = elementsStrings.map((e, i) => {
                             return e + elementsValues[i]
@@ -1106,8 +1104,8 @@ const actionsWalec = {
                             dx / 2,
                             NP, NQ, u, w, f1,
                             NP, d - 2 * h,
-                            -1,
-                            NQ, d, -h,
+                            1,
+                            NQ, d, h,
                             NP, NQ, f2
                         ];
                         let elementsTotal = elementsStrings.map((e, i) => {
@@ -1142,8 +1140,8 @@ const actionsWalec = {
                             dx / 2,
                             NP, NQ, -u, w, f1,
                             NP, d + 2 * h,
-                            -1,
-                            NQ, d, -h,
+                            1,
+                            NQ, d, h,
                             NP, NQ, f2
                         ];
                         let elementsTotal = elementsStrings.map((e, i) => {
