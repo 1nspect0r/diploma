@@ -193,7 +193,7 @@ const actionsKostka = {
                 break;
         }
     },
-    generateCodeFromScratch: function () { // dont forget to call drawModel after!
+    generateCodeFromScratch: function () {
 
         let [szerokosc, dlugosc, wysokosc] = przygotowka.listaWymiarow;
         openjscadModelParts1 = [];
@@ -358,7 +358,7 @@ const actionsKostka = {
     },
     generateGCode: function () {
 
-        let [szerokoscKostki, dlugoscKostki, wysokoscKostki] = przygotowka.listaWymiarow;
+        let [szerokoscKostki, dlugoscKostki, wysokoscKostki, S] = przygotowka.listaWymiarow;
         gCodeMainParts1 = [];
         gCodeMainParts1.push(`
                                                                     (G94/G95 - okreslenie trybu programowania posuwu [mm/min]/[mm/obr])
@@ -369,13 +369,14 @@ const actionsKostka = {
 
         for (let i of przygotowka.kartaObrobki.listaObrobek) {
             if (przygotowka.kartaObrobki.aktywne[przygotowka.kartaObrobki.listaObrobek.indexOf(i)]) {
-                switch (i.nazwa) { // jest offset? jest jedynka przy zetach?
+                switch (i.nazwa) {
                     case `czoło`: {
                         let [h, fi, g, f] = i.listaWymiarow;
                         h = h - offset;
                         gCodeMainParts2 = [
                             `(obrobka nr. ${przygotowka.kartaObrobki.listaObrobek.indexOf(i) + 1} - czolo)`,
                             `(Txxxx M6 - wybor narzedzia o srednicy ${fi} mm i wymiana)`,
+                            `S${S * 1} M3`,
                             `G00 X-${fi / 2} Y${fi / 2}`,
                             `Z1`,
                             `G91 F${f}`
@@ -431,6 +432,7 @@ const actionsKostka = {
                         gCodeMainParts2 = [
                             `(obrobka nr. ${przygotowka.kartaObrobki.listaObrobek.indexOf(i) + 1} - otwor)`,
                             `(Txxxx M6 - wybor narzedzia o srednicy ${d} mm i wymiana)`,
+                            `S${S * 0.6} M3`,
                             `G00 X${x} Y${y}`,
                             `Z1`,
                             `G91`,
@@ -449,6 +451,7 @@ const actionsKostka = {
                         gCodeMainParts2.push(`
                                                                     (obrobka nr. ${przygotowka.kartaObrobki.listaObrobek.indexOf(i) + 1} - kieszen prostokatna)
                                                                     (Txxxx M6 - wybor narzedzia o srednicy ${2 * r} mm i wymiana)
+                                                                    S${S * 0.9} M3
                                                                     G00 X${x0 + r} Y${y0 + r}
                                                                     Z1
                                                                     G91 F${f}`);
@@ -575,6 +578,7 @@ const actionsKostka = {
                         gCodeMainParts2.push(`
                                                                     (obrobka nr. ${przygotowka.kartaObrobki.listaObrobek.indexOf(i) + 1} - kieszen okragla)
                                                                     (Txxxx M6 - wybor narzedzia o srednicy ${srednicaNarzedzia} mm i wymiana)
+                                                                    S${S * 0.8} M3
                                                                     G00 X${x0} Y${y0}
                                                                     Z1
                                                                     G91 F${f}`);
@@ -620,6 +624,7 @@ const actionsKostka = {
                         gCodeMainParts2.push(`
                                                                     (obrobka nr. ${przygotowka.kartaObrobki.listaObrobek.indexOf(i) + 1} - rowek kolowy)
                                                                     (Txxxx M6 - wybor narzedzia o srednicy ${srednicaNarzedzia} mm i wymiana)
+                                                                    S${S * 0.8} M3
                                                                     G00 X${wejscieX} Y${y0}
                                                                     Z1
                                                                     G91 F${f}`);

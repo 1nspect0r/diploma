@@ -61,10 +61,11 @@ export const kostka = {
     opis: `<span class="opis-1"> Kostka. <br>
 szerokość - wymiar w osi X <br>
 długość - wymiar w osi Y <br>
-wysokość - wymiar w osi Z </span>`,
+wysokość - wymiar w osi Z <br>
+S max - maksymalna prędkość obrotu wrzeciona </span>`,
 
     listaWymiarow: [],
-    nazwyWymiarow: ['szerokość', 'długość', 'wysokość'],
+    nazwyWymiarow: ['szerokość', 'długość', 'wysokość', 'S max [obr/min]'],
 
     kartaObrobki: {
         listaObrobek: [],

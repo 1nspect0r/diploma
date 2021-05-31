@@ -9,6 +9,7 @@ r - długość drogi wycofania po jednym zanurzeniu <br>
 q - głębokość jednego zanurzenia <br>
 p - szerokość płytki oraz grubość jednego przejścia <br>
 f - posuw <br>
+S - prędkość obrotowa wrzeciona <br>
 Dla płytek, mierzonych do górnej krawędzi. </span>`,
 
     listaWymiarow: [],
@@ -24,7 +25,8 @@ h - szerokość rowka <br>
 r - długość drogi wycofania po jednym zanurzeniu <br>
 p - głębokość jednego zanurzenia <br>
 q - szerokość płytki oraz szerokość jednego zanurzenia <br>
-f - posuw </span>`,
+f - posuw <br>
+S - prędkość obrotowa wrzeciona </span>`,
 
     listaWymiarow: [],
     nazwyWymiarow: [`d0`, `d`, `h0`, `h`, `r`, `p [μm]`, `q [μm]`, `f`, `S [obr/min]`]
@@ -39,7 +41,8 @@ dx - ilość zdjętego materiału za przejście w osi X <br>
 u - naddatek na obróbkę wykańczającą w osi X <br>
 w - naddatek na obróbkę wykańczającą w osi Z <br>
 f (zgr) - posuw dla obróbki zgrubnej <br>
-f (wyk) - posuw dla obróbki wykańczającej </span>`,
+f (wyk) - posuw dla obróbki wykańczającej <br>
+S - prędkość skrawania </span>`,
 
     listaWymiarow: [],
     nazwyWymiarow: [`d`, `h`, `h0`, `dx`, `u`, `w`, `f (zgr)`, `f (wyk)`, `S [m/min]`]
@@ -54,7 +57,8 @@ dx - ilość zdjętego materiału za przejście w osi X <br>
 u - naddatek na obróbkę wykańczającą w osi X <br>
 w - naddatek na obróbkę wykańczającą w osi Z <br>
 f (zgr) - posuw dla obróbki zgrubnej <br>
-f (wyk) - posuw dla obróbki wykańczającej </span>`,
+f (wyk) - posuw dla obróbki wykańczającej
+S - prędkość skrawania </span>`,
 
     listaWymiarow: [],
     nazwyWymiarow: [`d`, `h`, `h0`, `dx`, `u`, `w`, `f (zgr)`, `f (wyk)`, `S [m/min]`]
@@ -68,6 +72,7 @@ d - średnica otworu <br>
 r - długość drogi wycofania po jednym zanurzeniu <br>
 q - głębokość jednego zanurzenia <br>
 f - posuw <br>
+S - prędkość obrotowa wrzeciona <br>
 Oś otworu jest osią walca. <br>
 Stożek o kącie 120 stopni. </span>`,
 
@@ -86,7 +91,7 @@ u - naddatek na obróbkę wykańczającą w osi X <br>
 w - naddatek na obróbkę wykańczającą w osi Z <br>
 f (zgr) - posuw dla obróbki zgrubnej <br>
 f (wyk) - posuw dla obróbki wykańczającej <br>
-S - prędkość obrotowa wrzeciona prędkość skrawania <br>
+S - prędkość skrawania <br>
 UWAGA! Grubość warstwy nie wlicza się do następujących obróbek, należy podawać wartości uwzględniając obróbkę czoła! </span>`,
 
     listaWymiarow: [],
