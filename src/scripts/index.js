@@ -11,7 +11,7 @@ const walec = require('./walec').walec;
 const elements = require('./elements.js');
 const processor = require('./cad').gProcessor;
 const originFunction = require('../models/origin-function');
-const helperPage = require('./helper-page.js');
+const helperPage = require('./helper-page.html');
 //const kostkaOpisy = require('./kostka').opisy;
 //const walecOpisy = require('./walec').opisy;
 
@@ -761,6 +761,10 @@ const actionsWalec = {
                         toRemove = 1;
                     }
                 }
+                if (s >= przygotowka.listaWymiarow[2]) {
+                    report(`Wpisana prędkość obrotowa przekracza maksymalną. `);
+                    toRemove = 1;
+                }
             }
                 break;
             case `fazowanie zewnętrzne`: {
@@ -807,6 +811,10 @@ const actionsWalec = {
                     report(`Za duża szerokość płytki. `);
                     toRemove = 1;
                 }
+                if (s >= przygotowka.listaWymiarow[2]) {
+                    report(`Wpisana prędkość obrotowa przekracza maksymalną. `);
+                    toRemove = 1;
+                }
             }
                 break;
             case `rowek czołowy`: {
@@ -827,6 +835,10 @@ const actionsWalec = {
                 }
                 if (q > h) {
                     report(`Za duża głębokość zanurzenia. `);
+                    toRemove = 1;
+                }
+                if (s >= przygotowka.listaWymiarow[2]) {
+                    report(`Wpisana prędkość obrotowa przekracza maksymalną. `);
                     toRemove = 1;
                 }
             }
