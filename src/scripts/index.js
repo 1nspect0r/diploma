@@ -11,7 +11,7 @@ const walec = require('./walec').walec;
 const elements = require('./elements.js');
 const processor = require('./cad').gProcessor;
 const originFunction = require('../models/origin-function');
-const helperPage = require('./helper-page.html');
+const helperPage = require('./helper-page');
 //const kostkaOpisy = require('./kostka').opisy;
 //const walecOpisy = require('./walec').opisy;
 

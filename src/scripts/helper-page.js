@@ -1,4 +1,4 @@
-<div id="help-page" style="font-size: 11px">
+module.exports =`<div id="help-page" style="font-size: 11px">
     <div class="app-container" style="font-weight: normal; font-size: 14px">
         <div class="header border border-2 border-primary rounded-1 p-1" style="position: relative;">
             <button class="btn btn-primary btn-sm" id="close-help-page" style="position: absolute; right: 4px;">Zamknij</button>
@@ -42,3 +42,4 @@
         </div>
     </div>
 </div>
+`;
