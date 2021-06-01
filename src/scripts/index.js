@@ -370,33 +370,33 @@ const actionsKostka = {
         for (let i of przygotowka.kartaObrobki.listaObrobek) {
             if (przygotowka.kartaObrobki.aktywne[przygotowka.kartaObrobki.listaObrobek.indexOf(i)]) {
                 switch (i.nazwa) {
-                    case `czoło`: {
+                    case `czoło`: { //checked, correct
                         let [h, fi, g, f] = i.listaWymiarow;
                         h = h - offset;
                         gCodeMainParts2 = [
                             `(obrobka nr. ${przygotowka.kartaObrobki.listaObrobek.indexOf(i) + 1} - czolo)`,
                             `(Txxxx M6 - wybor narzedzia o srednicy ${fi} mm i wymiana)`,
-                            `S${S * 1} M3`,
-                            `G00 X-${fi / 2} Y${fi / 2}`,
+                            `S${S * 1}`,
+                            `G00 X${-(fi / 2)} Y${fi / 2}`,
                             `Z1`,
-                            `G91 F${f}`
+                            `G91 M3 F${f}`
                         ];
 
-                        let iloscPrzejsc1 = h / g;
-                        let iloscPrzejsc2 = dlugoscKostki / fi;
+                        let przejscia_Z = h / g;
+                        let przejscia_Y = dlugoscKostki / fi;
                         let znak = 1;
 
-                        for (let i = 0; i < iloscPrzejsc1; i++) {
+                        for (let i = 0; i < przejscia_Z; i++) {
 
-                            if (i <= iloscPrzejsc1 - 1) {
+                            if (i <= przejscia_Z - 1) {
                                 gCodeMainParts2.push(`
-                                                                    G01 Z-${g - offset + 1}`);
+                                                                    G01 Z${-(g + 1)}`);
                             } else {
                                 gCodeMainParts2.push(`
-                                                                    G01 Z-${calculateRemainder(h, g) + 1}`);
+                                                                    G01 Z${-(calculateRemainder(h, g) + 1)}`);
                             }
 
-                            for (let j = 1; j < iloscPrzejsc2; j++) { // j = 1 because the last line is out of this loop
+                            for (let j = 1; j < przejscia_Y; j++) { // j = 1 because the last line is out of this loop
                                 gCodeMainParts2.push(`
                                                                     X${znak * (szerokoscKostki + fi)}
                                                                     Y${fi}`);
@@ -405,17 +405,18 @@ const actionsKostka = {
                             gCodeMainParts2.push(`
                                                                     X${znak * (szerokoscKostki + fi)}`);
 
-                            if (i <= iloscPrzejsc1 - 1) {
+                            if (i <= przejscia_Z - 1) {
                                 if (znak === -1) {
                                     gCodeMainParts2.push(`
-                                                                    G00 Y-${Math.ceil(iloscPrzejsc2) * fi} Z1`);
+                                                                    G00 Y${-(Math.ceil(przejscia_Y) * fi)} Z1`);
                                 } else {
                                     gCodeMainParts2.push(`
-                                                                    G00 X-${szerokoscKostki + fi} Y-${Math.ceil(iloscPrzejsc2) * fi} Z1`);
+                                                                    G00 X${-(szerokoscKostki + fi)} Y${-(Math.ceil(przejscia_Y) * fi)} Z1`);
                                 }
                             } else {
                                 gCodeMainParts2.push(`
-                                                                    G00 Z1`);
+                                                                    G00 Z1
+                                                                    (w tym momencie plaszczyzna XY przemieszcza sie do gornej powierzchni kostki)`);
                             }
                         }
 
@@ -425,17 +426,17 @@ const actionsKostka = {
 
                         offset += h;
                     }
-                        break;
+                        break; // checked, correct
                     case `otwór`: {
                         let [x, y, d, h, f] = i.listaWymiarow;
                         h = h - offset;
                         gCodeMainParts2 = [
                             `(obrobka nr. ${przygotowka.kartaObrobki.listaObrobek.indexOf(i) + 1} - otwor)`,
                             `(Txxxx M6 - wybor narzedzia o srednicy ${d} mm i wymiana)`,
-                            `S${S * 0.6} M3`,
+                            `S${S * 0.6}`,
                             `G00 X${x} Y${y}`,
                             `Z1`,
-                            `G91`,
+                            `G91 M3`,
                             `G01 Z${-(h + 1)} F${f}`,
                             `Z${h + 1}`
                         ];
@@ -444,81 +445,81 @@ const actionsKostka = {
                             `));
                         gCodeMainParts2 = [];
                     }
-                        break;
+                        break; // checked, correct
                     case `kieszeń prostokątna`: {
                         let [x0, y0, x, y, h, r, gruboscPrzejscia, f] = i.listaWymiarow;
                         h = h - offset;
                         gCodeMainParts2.push(`
                                                                     (obrobka nr. ${przygotowka.kartaObrobki.listaObrobek.indexOf(i) + 1} - kieszen prostokatna)
                                                                     (Txxxx M6 - wybor narzedzia o srednicy ${2 * r} mm i wymiana)
-                                                                    S${S * 0.9} M3
+                                                                    S${S * 0.9}
                                                                     G00 X${x0 + r} Y${y0 + r}
                                                                     Z1
-                                                                    G91 F${f}`);
+                                                                    G91 M3 F${f}`);
 
-                        let iloscPrzejsc1 = h / gruboscPrzejscia;
-                        let iloscPrzejsc2 = y / (2 * r);
+                        let przejscia_Z = h / gruboscPrzejscia;
+                        let przejscia_Y = y / (2 * r);
                         let znak = 1;
                         if (x === 2 * r) {
-                            for (let i = 0; i < iloscPrzejsc1; i++) {
-                                if (i <= iloscPrzejsc1 - 1) {
+                            for (let i = 0; i < przejscia_Z; i++) {
+                                if (i <= przejscia_Z - 1) {
                                     gCodeMainParts2.push(`
-                                                                    G01 Z-${gruboscPrzejscia + 1}`);
+                                                                    G01 Z${-(gruboscPrzejscia + 1)}`);
                                 } else {
                                     gCodeMainParts2.push(`
-                                                                    G01 Z-${calculateRemainder(h, gruboscPrzejscia) + 1}`);
+                                                                    G01 Z${-(calculateRemainder(h, gruboscPrzejscia) + 1)}`);
                                 }
 
                                 gCodeMainParts2.push(`
                                                                     Y${y - 2 * r}`);
 
-                                if (i <= iloscPrzejsc1 - 1) {
+                                if (i <= przejscia_Z - 1) {
                                     gCodeMainParts2.push(`
                                                                     Z1
-                                                                    Y-${y - 2 * r}`);
+                                                                    Y${-(y - 2 * r)}`);
                                 } else {
                                     gCodeMainParts2.push(`
-                                                                    Z${h}`);
+                                                                    Z${h + 1}`);
                                 }
                             }
                         } else if (y === 2 * r) {
-                            for (let i = 0; i < iloscPrzejsc1; i++) {
-                                if (i <= iloscPrzejsc1 - 1) {
+                            for (let i = 0; i < przejscia_Z; i++) {
+                                if (i <= przejscia_Z - 1) {
                                     gCodeMainParts2.push(`
-                                                                    G01 Z-${gruboscPrzejscia + 1}`);
+                                                                    G01 Z${-(gruboscPrzejscia + 1)}`);
                                 } else {
                                     gCodeMainParts2.push(`
-                                                                    G01 Z-${calculateRemainder(h, gruboscPrzejscia) + 1}`);
+                                                                    G01 Z${-(calculateRemainder(h, gruboscPrzejscia) + 1)}`);
                                 }
 
                                 gCodeMainParts2.push(`
                                                                     X${x - 2 * r}`);
 
-                                if (i <= iloscPrzejsc1 - 1) {
+                                if (i <= przejscia_Z - 1) {
                                     gCodeMainParts2.push(`
                                                                     Z1
-                                                                    X-${x - 2 * r}`);
+                                                                    X${-(x - 2 * r)}`);
                                 } else {
                                     gCodeMainParts2.push(`
-                                                                    Z${h}`);
+                                                                    Z${h + 1}`);
                                 }
                             }
                         } else {
-                            for (let i = 0; i < iloscPrzejsc1; i++) {
-                                if (i <= iloscPrzejsc1 - 1) {
+                            for (let i = 0; i < przejscia_Z; i++) {
+                                if (i <= przejscia_Z - 1) {
                                     gCodeMainParts2.push(`
-                                                                    G01 Z-${gruboscPrzejscia + 1}`);
+                                                                    G01 Z${-(gruboscPrzejscia + 1)}`);
                                 } else {
                                     gCodeMainParts2.push(`
-                                                                    G01 Z-${calculateRemainder(h, gruboscPrzejscia) + 1}`);
+                                                                    G01 Z${-(calculateRemainder(h, gruboscPrzejscia) + 1)}`);
                                 }
 
                                 gCodeMainParts2.push(`
                                                                     X${znak * (x - 2 * r)}`);
 
-                                for (let j = 1; j < iloscPrzejsc2; j++) {
+                                for (let j = 1; j < przejscia_Y; j++) {
                                     znak *= -1;
-                                    if (j <= iloscPrzejsc2 - 1) {
+                                    if (j <= przejscia_Y - 1) {
                                         gCodeMainParts2.push(`
                                                                     Y${2 * r}
                                                                     X${znak * (x - 2 * r)}`);
@@ -531,92 +532,88 @@ const actionsKostka = {
                                 if (znak === -1) { // 4th corner (corners are anti clockwise)
                                     gCodeMainParts2.push(`
                                                                     X${x - 2 * r}
-                                                                    Y-${y - 2 * r}
-                                                                    X-${x - 2 * 4}
+                                                                    Y${-(y - 2 * r)}
+                                                                    X${-(x - 2 * r)}
                                                                     Y${y - 2 * r}`);
                                 } else { // 3rd corner
                                     gCodeMainParts2.push(`
-                                                                    Y-${y - 2 * r}
-                                                                    X-${x - 2 * 4}
+                                                                    Y${-(y - 2 * r)}
+                                                                    X${-(x - 2 * r)}
                                                                     Y${y - 2 * r}
                                                                     X${x - 2 * r}`);
                                 }
 
-                                if (i <= iloscPrzejsc1 - 1) {
+                                if (i <= przejscia_Z - 1) {
+                                    gCodeMainParts2.push();
                                     if (znak === -1) {
                                         gCodeMainParts2.push(`
                                                                     Z1
-                                                                    G00 Y-${y - 2 * r}`);
+                                                                    G00 Y${-(y - 2 * r)}`);
                                     } else {
                                         gCodeMainParts2.push(`
                                                                     Z1
-                                                                    G00 X-${x - 2 * r} Y-${y - 2 * r}`);
+                                                                    G00 X${-(x - 2 * r)} Y${-(y - 2 * r)}`);
                                     }
                                 } else {
-                                    if (znak === -1) {
-                                        gCodeMainParts2.push(`
-                                                                    X${x / 2 - r} Y${y / 2 - r} Z1`);
-                                    } else {
-                                        gCodeMainParts2.push(`
-                                                                    X-${x / 2 - r} Y${y / 2 - r} Z1`);
-                                    }
                                     gCodeMainParts2.push(`
-                                                                    G00 Z${h}`);
+                                                                    G00 X${znak * -1 * (x / 2 - r)} Y${-(y / 2 - r)} Z${h + 1}`);
                                 }
                             }
                         }
 
-                        /******************************************************************************************/
                         gCodeMainParts1.push(gCodeMainParts2.join(`
                             `));
                         gCodeMainParts2 = [];
                     }
-                        break;
+                        break; // checked, correct !!! have to check the "j = 1; j < przejscia" loop
                     case `kieszeń okrągła`: {
                         let [x0, y0, r, h, srednicaNarzedzia, gruboscPrzejscia, f] = i.listaWymiarow;
                         h = h - offset;
                         gCodeMainParts2.push(`
                                                                     (obrobka nr. ${przygotowka.kartaObrobki.listaObrobek.indexOf(i) + 1} - kieszen okragla)
                                                                     (Txxxx M6 - wybor narzedzia o srednicy ${srednicaNarzedzia} mm i wymiana)
-                                                                    S${S * 0.8} M3
+                                                                    S${S * 0.8}
                                                                     G00 X${x0} Y${y0}
                                                                     Z1
-                                                                    G91 F${f}`);
+                                                                    G91 M3 F${f}`);
 
-                        let iloscPrzejsc1 = h / gruboscPrzejscia;
-                        let iloscPrzejsc2 = (2 * r - srednicaNarzedzia) / (2 * srednicaNarzedzia);
-                        for (let i = 0; i < iloscPrzejsc1; i++) {
-                            if (i <= iloscPrzejsc1 - 1) {
+                        let przejscia_Z = h / gruboscPrzejscia;
+                        let przejscia_XY = (2 * r - srednicaNarzedzia) / (2 * srednicaNarzedzia);
+                        for (let i = 0; i < przejscia_Z; i++) {
+                            if (i <= przejscia_Z - 1) {
                                 gCodeMainParts2.push(`
-                                                                    G01 Z-${gruboscPrzejscia + 1}`);
+                                                                    G01 Z${-(gruboscPrzejscia + 1)}`);
                             } else {
                                 gCodeMainParts2.push(`
-                                                                    G01 Z-${calculateRemainder(h, gruboscPrzejscia) + 1}`);
+                                                                    G01 Z${-(calculateRemainder(h, gruboscPrzejscia) + 1)}`);
                             }
 
-                            for (let j = 0; j < iloscPrzejsc2; j++) {
-                                if (j <= iloscPrzejsc2 - 1) {
+                            for (let j = 0; j < przejscia_XY; j++) {
+                                if (j <= przejscia_XY - 1) {
                                     gCodeMainParts2.push(`
                                                                     X${srednicaNarzedzia}
-                                                                    G02 G17 X0 Y0 I-${(srednicaNarzedzia / 2) + (j * srednicaNarzedzia)} J0`);
+                                                                    G02 G17 X0 Y0 I${-((j + 1) * srednicaNarzedzia)} J0`);
                                 } else {
                                     gCodeMainParts2.push(`
                                                                     X${calculateRemainder(2 * r - srednicaNarzedzia, 2 * srednicaNarzedzia)}
-                                                                    G02 G17 X0 Y0 I-${r - (srednicaNarzedzia / 2)} J0`);
+                                                                    G02 G17 X0 Y0 I${-(r - (srednicaNarzedzia / 2))} J0`);
                                 }
                             }
-                            gCodeMainParts2.push(`
-                                                                    G00 X-${r - (srednicaNarzedzia / 2)} Z1`);
 
+                            if (i <= przejscia_Z - 1) {
+                                gCodeMainParts2.push(`
+                                                                    G00 X${-(r - (srednicaNarzedzia / 2))} Z1`);
+                            } else {
+                                gCodeMainParts2.push(`
+                                                                    G00 X${-(r - (srednicaNarzedzia / 2))} Z${h + 1}`);
+                            }
                         }
-                        gCodeMainParts2.push(`
-                                                                    Z${h}`);
 
                         gCodeMainParts1.push(gCodeMainParts2.join(`
                             `));
                         gCodeMainParts2 = [];
                     }
-                        break;
+                        break; // have to check value after "I" in G02
                     case `rowek kołowy`: {
                         let [x0, y0, R, l, h, srednicaNarzedzia, gruboscPrzejscia, f] = i.listaWymiarow;
                         h = h - offset;
@@ -624,67 +621,66 @@ const actionsKostka = {
                         gCodeMainParts2.push(`
                                                                     (obrobka nr. ${przygotowka.kartaObrobki.listaObrobek.indexOf(i) + 1} - rowek kolowy)
                                                                     (Txxxx M6 - wybor narzedzia o srednicy ${srednicaNarzedzia} mm i wymiana)
-                                                                    S${S * 0.8} M3
+                                                                    S${S * 0.8}
                                                                     G00 X${wejscieX} Y${y0}
                                                                     Z1
-                                                                    G91 F${f}`);
+                                                                    G91 M3 F${f}`);
 
-                        let iloscPrzejsc1 = h / gruboscPrzejscia;
-                        let iloscPrzejsc2 = (l - srednicaNarzedzia) / srednicaNarzedzia;
+                        let przejscia_Z = h / gruboscPrzejscia;
+                        let przejscia_XY = (l - srednicaNarzedzia) / srednicaNarzedzia;
                         if (l === srednicaNarzedzia) {
                             gCodeMainParts2.push(`
-                                                                    G01 Z-${gruboscPrzejscia + 1}
-                                                                    G02 G17 X0 Y0 I-${wejscieX - x0} J0`);
-                            for (let i = 1; i < iloscPrzejsc1; i++) { // przejscia w Z
-                                if (i <= iloscPrzejsc1 - 1) {
+                                                                    G01 Z${-(gruboscPrzejscia + 1)}
+                                                                    G02 G17 X0 Y0 I${-R} J0`);
+                            for (let i = 1; i < przejscia_Z; i++) {
+                                if (i <= przejscia_Z - 1) {
                                     gCodeMainParts2.push(`
-                                                                    G01 Z-${gruboscPrzejscia}
-                                                                    G02 G17 X0 Y0 I-${wejscieX - x0} J0`);
+                                                                    G01 Z${-gruboscPrzejscia}
+                                                                    G02 G17 X0 Y0 I${-R} J0`);
                                 } else {
                                     gCodeMainParts2.push(`
-                                                                    G01 Z-${calculateRemainder(h, gruboscPrzejscia)}
-                                                                    G02 G17 X0 Y0 I-${wejscieX - x0} J0`);
+                                                                    G01 Z${-1 * calculateRemainder(h, gruboscPrzejscia)}
+                                                                    G02 G17 X0 Y0 I${-R} J0
+                                                                    G01 Z${h + 1}`);
                                 }
                             }
                         } else {
-                            for (let i = 0; i < iloscPrzejsc1; i++) { // przejscia w Z
-                                if (i <= iloscPrzejsc1 - 1) {
+                            for (let i = 0; i < przejscia_Z; i++) {
+                                if (i <= przejscia_Z - 1) {
                                     gCodeMainParts2.push(`
-                                                                    G01 Z-${gruboscPrzejscia + 1}
-                                                                    G02 G17 X0 Y0 I-${wejscieX - x0} J0`);
+                                                                    G01 Z${-(gruboscPrzejscia + 1)}
+                                                                    G02 G17 X0 Y0 I${-(wejscieX - x0)} J0`);
                                 } else {
                                     gCodeMainParts2.push(`
-                                                                    G01 Z-${calculateRemainder(h, gruboscPrzejscia) + 1}
-                                                                    G02 G17 X0 Y0 I-${wejscieX - x0} J0`);
+                                                                    G01 Z${-(calculateRemainder(h, gruboscPrzejscia) + 1)}
+                                                                    G02 G17 X0 Y0 I${-(wejscieX - x0)} J0`);
                                 }
-                                for (let j = 1; j < iloscPrzejsc2; j++) { // przejscia w XY
-                                    if (j <= iloscPrzejsc2 - 1) {
+                                for (let j = 1; j < przejscia_XY; j++) {
+                                    if (j <= przejscia_XY - 1) {
                                         gCodeMainParts2.push(`
                                                                     G01 X${srednicaNarzedzia}
-                                                                    G02 G17 X0 Y0 I-${wejscieX + j * srednicaNarzedzia} J0`);
+                                                                    G02 G17 X0 Y0 I${-(wejscieX - x0 + j * srednicaNarzedzia)} J0`);
                                     } else {
                                         gCodeMainParts2.push(`
-                                                                    X${calculateRemainder(l - srednicaNarzedzia, srednicaNarzedzia)}
-                                                                    G02 G17 X0 Y0 I-${R + l / 2 - srednicaNarzedzia / 2} J0`);
+                                                                    G01 X${calculateRemainder(l - srednicaNarzedzia, srednicaNarzedzia)}
+                                                                    G02 G17 X0 Y0 I${-(R + l / 2 - srednicaNarzedzia / 2)} J0`);
                                     }
                                 }
-                                if (i <= iloscPrzejsc1 - 1) {
+                                if (i <= przejscia_Z - 1) {
                                     gCodeMainParts2.push(`
-                                                                    G00 X-${R + l / 2 - srednicaNarzedzia / 2} Z1`);
+                                                                    G00 X${-(R + l / 2 - srednicaNarzedzia / 2)} Z1`);
                                 } else {
                                     gCodeMainParts2.push(`
-                                                                    G00 X-${l / 2 + srednicaNarzedzia / 2}`);
+                                                                    G00 X${-(l / 2 - srednicaNarzedzia / 2)} Z${h + 1}`);
                                 }
                             }
                         }
-                        gCodeMainParts2.push(`
-                                                                    Z${h}`);
 
                         gCodeMainParts1.push(gCodeMainParts2.join(`
                             `));
                         gCodeMainParts2 = [];
                     }
-                        break;
+                        break; // check j=1;j<=...
                 }
                 gCodeMainParts1.push(`
                                                                     G90
