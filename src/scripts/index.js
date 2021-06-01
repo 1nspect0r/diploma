@@ -579,29 +579,33 @@ const actionsKostka = {
                         let przejscia_Z = h / gruboscPrzejscia;
                         let przejscia_XY = (2 * r - srednicaNarzedzia) / (2 * srednicaNarzedzia);
                         for (let i = 0; i < przejscia_Z; i++) {
-                            if (i <= przejscia_Z - 1) {
+                            if (i < przejscia_Z - 1) {
                                 gCodeMainParts2.push(`
-                                                                    G01 Z${-(gruboscPrzejscia + 1)}
-                                                                    X${srednicaNarzedzia}`);
+                                                                    G01 Z${-(gruboscPrzejscia + 1)}`);
                             } else {
                                 gCodeMainParts2.push(`
-                                                                    G01 Z${-(calculateRemainder(h, gruboscPrzejscia) + 1)}
-                                                                    X${srednicaNarzedzia}`);
+                                                                    G01 Z${-(calculateRemainder(h, gruboscPrzejscia) + 1)}`);
                             }
 
-                            for (let j = 1; j < przejscia_XY; j++) { // this has issues
-                                if (j <= przejscia_XY - 1) {
+                            for (let j = 0; j < przejscia_XY; j++) {
+                                if (j === 0) {
                                     gCodeMainParts2.push(`
-                                                                    G02 G17 X0 Y0 I${-((j + 1) * srednicaNarzedzia)} J0
-                                                                    G01 X${srednicaNarzedzia}`);
+                                                                    X${srednicaNarzedzia}
+                                                                    G02 G17 X0 Y0 I${-((j + 1) * srednicaNarzedzia)} J0`);
+                                    console.log(j);
+                                } else if (j > 0 && j < przejscia_XY - 1) {
+                                    gCodeMainParts2.push(`
+                                                                    G01 X${srednicaNarzedzia}
+                                                                    G02 G17 X0 Y0 I${-((j + 1) * srednicaNarzedzia)} J0`);
+                                    console.log(j);
                                 } else {
                                     gCodeMainParts2.push(`
-                                                                    X${calculateRemainder(2 * r - srednicaNarzedzia, 2 * srednicaNarzedzia)}
+                                                                    G01 X${calculateRemainder(2 * r - srednicaNarzedzia, 2 * srednicaNarzedzia)}
                                                                     G02 G17 X0 Y0 I${-(r - (srednicaNarzedzia / 2))} J0`);
                                 }
                             }
 
-                            if (i <= przejscia_Z - 1) {
+                            if (i < przejscia_Z - 1) {
                                 gCodeMainParts2.push(`
                                                                     G00 X${-(r - (srednicaNarzedzia / 2))} Z1`);
                             } else {
