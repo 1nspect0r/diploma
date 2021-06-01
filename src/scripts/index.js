@@ -473,13 +473,14 @@ const actionsKostka = {
                                 gCodeMainParts2.push(`
                                                                     Y${y - 2 * r}`);
 
-                                if (i <= przejscia_Z - 1) {
+                                if (i < przejscia_Z - 1) {
                                     gCodeMainParts2.push(`
                                                                     Z1
                                                                     Y${-(y - 2 * r)}`);
                                 } else {
                                     gCodeMainParts2.push(`
-                                                                    Z${h + 1}`);
+                                                                    Z${h}
+                                                                    G00 Z1`);
                                 }
                             }
                         } else if (y === 2 * r) {
@@ -495,13 +496,14 @@ const actionsKostka = {
                                 gCodeMainParts2.push(`
                                                                     X${x - 2 * r}`);
 
-                                if (i <= przejscia_Z - 1) {
+                                if (i < przejscia_Z - 1) {
                                     gCodeMainParts2.push(`
                                                                     Z1
                                                                     X${-(x - 2 * r)}`);
                                 } else {
                                     gCodeMainParts2.push(`
-                                                                    Z${h + 1}`);
+                                                                    Z${h}
+                                                                    G00 Z1`);
                                 }
                             }
                         } else {
@@ -531,32 +533,29 @@ const actionsKostka = {
                                 }
                                 if (znak === -1) { // 4th corner (corners are anti clockwise)
                                     gCodeMainParts2.push(`
-                                                                    X${x - 2 * r}
                                                                     Y${-(y - 2 * r)}
-                                                                    X${-(x - 2 * r)}
+                                                                    X${x - 2 * r}
                                                                     Y${y - 2 * r}`);
                                 } else { // 3rd corner
                                     gCodeMainParts2.push(`
                                                                     Y${-(y - 2 * r)}
                                                                     X${-(x - 2 * r)}
-                                                                    Y${y - 2 * r}
-                                                                    X${x - 2 * r}`);
+                                                                    Y${y - 2 * r}`);
                                 }
 
-                                if (i <= przejscia_Z - 1) {
-                                    gCodeMainParts2.push();
+                                if (i < przejscia_Z - 1) {
                                     if (znak === -1) {
                                         gCodeMainParts2.push(`
                                                                     Z1
-                                                                    G00 Y${-(y - 2 * r)}`);
+                                                                    G00 X${-(x - 2 * r)} Y${-(y - 2 * r)}`);
                                     } else {
                                         gCodeMainParts2.push(`
                                                                     Z1
-                                                                    G00 X${-(x - 2 * r)} Y${-(y - 2 * r)}`);
+                                                                    G00 Y${-(y - 2 * r)}`);
                                     }
                                 } else {
                                     gCodeMainParts2.push(`
-                                                                    G00 X${znak * -1 * (x / 2 - r)} Y${-(y / 2 - r)} Z${h + 1}`);
+                                                                    G00 X${znak * (x / 2 - r)} Y${-(y / 2 - r)} Z${h + 1}`);
                                 }
                             }
                         }
@@ -565,7 +564,7 @@ const actionsKostka = {
                             `));
                         gCodeMainParts2 = [];
                     }
-                        break; // checked, correct !!! have to check the "j = 1; j < przejscia" loop
+                        break; // checked, perfect
                     case `kieszeń okrągła`: {
                         let [x0, y0, r, h, srednicaNarzedzia, gruboscPrzejscia, f] = i.listaWymiarow;
                         h = h - offset;
@@ -582,17 +581,19 @@ const actionsKostka = {
                         for (let i = 0; i < przejscia_Z; i++) {
                             if (i <= przejscia_Z - 1) {
                                 gCodeMainParts2.push(`
-                                                                    G01 Z${-(gruboscPrzejscia + 1)}`);
+                                                                    G01 Z${-(gruboscPrzejscia + 1)}
+                                                                    X${srednicaNarzedzia}`);
                             } else {
                                 gCodeMainParts2.push(`
-                                                                    G01 Z${-(calculateRemainder(h, gruboscPrzejscia) + 1)}`);
+                                                                    G01 Z${-(calculateRemainder(h, gruboscPrzejscia) + 1)}
+                                                                    X${srednicaNarzedzia}`);
                             }
 
-                            for (let j = 0; j < przejscia_XY; j++) {
+                            for (let j = 1; j < przejscia_XY; j++) { // this has issues
                                 if (j <= przejscia_XY - 1) {
                                     gCodeMainParts2.push(`
-                                                                    X${srednicaNarzedzia}
-                                                                    G02 G17 X0 Y0 I${-((j + 1) * srednicaNarzedzia)} J0`);
+                                                                    G02 G17 X0 Y0 I${-((j + 1) * srednicaNarzedzia)} J0
+                                                                    G01 X${srednicaNarzedzia}`);
                                 } else {
                                     gCodeMainParts2.push(`
                                                                     X${calculateRemainder(2 * r - srednicaNarzedzia, 2 * srednicaNarzedzia)}
