@@ -4,24 +4,65 @@ body {
   margin: 0;
 }
 
+.help-container {
+
+  width: 1280px;
+  height: 800px;
+
+  display: grid;
+  grid-template: 1fr 301px 301px 36px / 280px 602px 1fr;
+  box-sizing: border-box;
+
+  background-color: #f3f3f3;
+  font-weight: normal;
+  font-size: 14px;
+  color: #505050;
+
+  .border-primary {
+    border-color: #808080 !important;
+  }
+  .rounded-1 {
+    border-radius: 0 !important;
+  }
+  .border-2 {
+    border-width: 1px !important;
+  }
+  .text-centered {
+    text-align: center;
+  }
+}
+
 .app-container {
+
+  .border-2 {
+    border-width: 1px !important;
+  }
+  .border-dark {
+    border-color: #d7d7d7 !important;
+  }
+  .rounded-1 {
+    border-radius: 0 !important;
+  }
 
   width: 1280px;
   height: 800px;
 
   //font-family: "Quicksand", "Helvetica", sans-serif;
-  font-weight: bold;
+  font-weight: normal;
   font-size: 16px;
+  color: #505050;
 
   display: grid;
-  grid-template: 1fr 301px 301px 50px / 280px 604px 1fr;
-  padding: 2px;
+  grid-template: 1fr 301px 301px 36px / 280px 602px 1fr;
+  padding: 0;
   box-sizing: border-box;
 
-  gap: 2px;
+  background-color: #eeeeee;
+
+  gap: 0;
 
   div.bordered {
-    border: 2px solid #000000;
+    border: 1px solid #000000;
   }
 
   .header .header-1 {
@@ -29,12 +70,13 @@ body {
   }
 
   ul.leftList {
-    margin: 8px;
-
+    padding-left: 8px;
+    margin-top: 8px;
+    margin-left: 0;
+    margin-right: 8px;
     li {
       display: block;
       border-bottom: solid 1px silver;
-
     }
   }
 
@@ -49,7 +91,7 @@ body {
       width: 600px;
 
       .viewer {
-        background: #949398;
+        background: silver;
         border: none;
       }
     }
@@ -90,13 +132,13 @@ body {
     padding-top: 16px;
 
     .message {
-      font-family: monospace;
+      //font-family: monospace;
       font-weight: normal;
       font-size: 12px;
-      color: #333333;
+      color: #565656;
 
       .date-label {
-        color: gray;
+        color: #696969;
       }
     }
   }
@@ -127,7 +169,7 @@ body {
 }
 
 #opensjcad {
-  background-color: #f70000;
+  background-color: silver;
 }
 
 .rightList {

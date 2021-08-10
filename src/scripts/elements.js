@@ -7,6 +7,7 @@ module.exports = {
         //openedFiles: document.getElementById(`openedFiles`).getElementsByTagName(`li`),
     btnGenerateGCode: document.getElementById(`btnGenerateGCode`),
     btnExport: document.getElementById('btnExport'),
+    btnInput: document.getElementById('btnInput'),
     inputFile: document.getElementById('input-file'),
     btnHelp: document.getElementById(`btnHelp`),
     // Class "leftList":
