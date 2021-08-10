@@ -36,7 +36,7 @@ function versionControl() {
 let obrobka = {}; // changes completely each time a new obrobka is added, stores obrobka and is pushed to "listaObrobek" array in "przygotowka" object
 let przygotowka = {}; // the main object
 const dostepnePrzygotowki = [kostka, walec];
-let toRemove = 0; // acquires 1 when current processing "obrobka" should and will be removed
+let toRemove = 0; // IS A FLAG! acquires 1 when current processing "obrobka" should and will be removed
 //let opisy = [kostkaOpisy[0], walecOpisy[0]]; // keep the order! same as dostepnePrzygotowki
 //let nazwy = [`kostka`, `walec`]; // keep the order! same as dostepnePrzygotowki
 
@@ -65,7 +65,6 @@ let gCodeMainParts2 = [];
 let gCodeMainParts1 = [];
 let gCodeMain = ``;
 let gCodeParts = [`
-                                                                    (Kod wygenerowano automatycznie w aplikacji, stanowiacej podstawe pracy dyplomowej)
                                                                     G54`,
     gCodeMain
 ];
@@ -102,7 +101,7 @@ const actionsKostka = {
                     report(`Należy uwzględnić poprzednie obróbki czoła. `);
                     toRemove = 1;
                 }
-                if (g > h) {
+                if (g > h - offsetTracker) {
                     report(`Głębokość przejścia nie może być większa niż grubość warstwy. `);
                     toRemove = 1;
                 }
@@ -142,7 +141,7 @@ const actionsKostka = {
                     report(`Należy wybrać obróbkę "otwór" lub "kieszeń okrągła". `);
                     toRemove = 1;
                 }
-                if (g > h) {
+                if (g > h - offsetTracker) {
                     report(`Głębokość przejścia nie może być większa niż głębokość kieszeni. `);
                     toRemove = 1;
                 }
@@ -168,7 +167,7 @@ const actionsKostka = {
                     report(`Średnica narzędzia nie może być większa niż średnica kieszeni. `);
                     toRemove = 1;
                 }
-                if (g > h) {
+                if (g > h - offsetTracker) {
                     report(`Głębokość przejścia nie może być większa niż głębokość kieszeni. `);
                     toRemove = 1;
                 }
@@ -198,7 +197,7 @@ const actionsKostka = {
                     report(`Średnica narzędzia nie może być większa od szerokości rowka. `);
                     toRemove = 1;
                 }
-                if (g > h) {
+                if (g > h - offsetTracker) {
                     report(`Głębokość przejścia nie może być większa niż głębokość rowka. `);
                     toRemove = 1;
                 }
@@ -801,7 +800,7 @@ const actionsWalec = {
                         toRemove = 1;
                     }
                 }
-                if (s >= przygotowka.listaWymiarow[2]) {
+                if (s > przygotowka.listaWymiarow[2]) {
                     report(`Wpisana prędkość obrotowa przekracza maksymalną. `);
                     toRemove = 1;
                 }
@@ -843,11 +842,11 @@ const actionsWalec = {
                     report(`Średnica końcowa nie może być większa lub równa początkowej. `);
                     toRemove = 1;
                 }
-                if (p > (d0 - d) / 2) {
+                if (p / 1000 > (d0 - d) / 2) {
                     report(`Za duża głębokość zanurzenia. `);
                     toRemove = 1;
                 }
-                if (q > h) {
+                if (q / 1000 > h) {
                     report(`Za duża szerokość płytki. `);
                     toRemove = 1;
                 }
@@ -865,11 +864,11 @@ const actionsWalec = {
                     report(`Średnica końcowa nie może być większa lub równa początkowej. `);
                     toRemove = 1;
                 }
-                if (p > (d0 - d) / 2) {
+                if (p / 1000 > (d0 - d) / 2) {
                     report(`Za duża szerokość płytki. `);
                     toRemove = 1;
                 }
-                if (q > h) {
+                if (q / 1000 > h) {
                     report(`Za duża głębokość zanurzenia. `);
                     toRemove = 1;
                 }
@@ -1342,7 +1341,7 @@ function drawModel() {
 }
 
 function calculateRemainder(a, b) {
-    return (a * 1000) % (b * 1000) / 1000;
+    return (a * 1000000) % (b * 1000000) / 1000000;
 }
 
 let NP, NQ = 0;
@@ -1451,7 +1450,7 @@ function processInput(loadTo) {
     action.checkValues(loadTo);
 
     // checks if this "obrobka" already exists (any small change in input (stored) values is enough to pass through this), if it does - "toRemove"
-    // if no "toRemove" is triggered - .push "obrobka" to a place in "przygotowka", together with an active flag. "obrobka" cleared
+    // if no "toRemove" is triggered - .push "obrobka" and an active flag to a place in "przygotowka". "obrobka" cleared
     if (loadTo === obrobka) {
 
         for (let i of przygotowka.kartaObrobki.listaObrobek) {
