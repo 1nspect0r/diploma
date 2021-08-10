@@ -9,11 +9,11 @@ r - długość drogi wycofania po jednym zanurzeniu <br>
 q - głębokość jednego zanurzenia <br>
 p - szerokość płytki oraz grubość jednego przejścia <br>
 f - posuw <br>
-S - prędkość obrotowa wrzeciona <br>
-Dla płytek, mierzonych do górnej krawędzi. </span>`,
+S - prędkość skrawania <br>
+Dla płytek, mierzonych od krawędzi o większej współrzędnej X. </span>`,
 
     listaWymiarow: [],
-    nazwyWymiarow: [`d0`, `d`, `h0`, `h`, `r`, `q [μm]`, `p [μm]`, `f`, `S [obr/min]`]
+    nazwyWymiarow: [`d0`, `d`, `h0`, `h`, `r`, `q [μm]`, `p [μm]`, `f`, `S [m/min]`]
 };
 const rowekWzdluzny1 = {
     nazwa: `rowek wzdłużny`,
@@ -26,10 +26,10 @@ r - długość drogi wycofania po jednym zanurzeniu <br>
 p - głębokość jednego zanurzenia <br>
 q - szerokość płytki oraz szerokość jednego zanurzenia <br>
 f - posuw <br>
-S - prędkość obrotowa wrzeciona </span>`,
+S - prędkość skrawania </span>`,
 
     listaWymiarow: [],
-    nazwyWymiarow: [`d0`, `d`, `h0`, `h`, `r`, `p [μm]`, `q [μm]`, `f`, `S [obr/min]`]
+    nazwyWymiarow: [`d0`, `d`, `h0`, `h`, `r`, `p [μm]`, `q [μm]`, `f`, `S [m/min]`]
 };
 const fazaWewn1 = {
     nazwa: `fazowanie wewnętrzne`,
@@ -92,7 +92,7 @@ w - naddatek na obróbkę wykańczającą w osi Z <br>
 f (zgr) - posuw dla obróbki zgrubnej <br>
 f (wyk) - posuw dla obróbki wykańczającej <br>
 S - prędkość skrawania <br>
-UWAGA! Grubość warstwy nie wlicza się do następujących obróbek, należy podawać wartości uwzględniając obróbkę czoła! </span>`,
+UWAGA! Grubość warstwy nie wlicza się do następujących obróbek! </span>`,
 
     listaWymiarow: [],
     nazwyWymiarow: [`d0`, `d`, `h0`, `h`, `dx`, `u`, `w`, `f (zgr)`, `f (wyk)`, `S [m/min]`]
@@ -100,7 +100,7 @@ UWAGA! Grubość warstwy nie wlicza się do następujących obróbek, należy po
 export const walec = {
     nazwa: `walec`,
     opis: `<span class="opis-1"> Walec. <br>
-S max - maksymalna prędkość obrotu wrzeciona </span>`,
+S max - maksymalna prędkość obrotów wrzeciona. </span>`,
 
     listaWymiarow: [],
     nazwyWymiarow: ['średnica', 'długość', 'S max [obr/min]'],
