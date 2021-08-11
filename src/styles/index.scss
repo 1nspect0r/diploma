@@ -65,8 +65,26 @@ body {
     border: 1px solid #000000;
   }
 
-  .header .header-1 {
-    margin-top: 25px;
+  .header {
+    #btnStart {
+      position: relative;
+    }
+    #btnGenerateGCode {
+      position: relative;
+      left: 10px;
+    }
+    #btnExport {
+      position: relative;
+      left: 110px;
+    }
+    #btnInput {
+      position: relative;
+      left: 120px;
+    }
+    #btnHelp {
+      position: relative;
+      left: 220px;
+    }
   }
 
   ul.leftList {
@@ -195,4 +213,12 @@ body {
 .helper {
   position: relative;
   grid-column: 3 / 4;
+}
+
+.clock {
+  position: absolute;
+  top: 140px;
+  left: 1210px;
+  font-family: monospace;
+  font-size: 12px;
 }

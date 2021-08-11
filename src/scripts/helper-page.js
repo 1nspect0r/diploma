@@ -2,7 +2,6 @@ module.exports =`<div id="help-page" style="font-size: 11px">
     <div class="help-container">
         <div class="header border border-2 border-primary rounded-1 p-1" style="position: relative;">
             <button class="btn btn-dark btn-sm" id="close-help-page" style="position: absolute; right: 4px;">Zamknij</button>
-            <div class="d-md-flex justify-content-md-evenly">
                 W tym polu znajdują się przyciski: <br>
                 <ul>
                     <li>"Rozpocznij" - musisz go wcisnąć aby zacząć pracę</li>
@@ -10,7 +9,7 @@ module.exports =`<div id="help-page" style="font-size: 11px">
                     <li>"Eksportować" - w każdy moment możesz wcisnąć go aby ściągnąć plik z danymi modelu, który można będzie użyć przy pomocy następnego przycisku</li>
                     <li>"Importować" - wciśnij jeśli chcesz wgrać poprzednio wygenerowany tutaj plik aby odtworzyć model</li>
                 </ul>
-            </div>
+            <span class="clock"></span>
         </div>
         <div class="leftList border border-2 border-primary rounded-1 p-1">
             <div class="text-centered">
