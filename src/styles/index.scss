@@ -66,24 +66,29 @@ body {
   }
 
   .header {
-    #btnStart {
-      position: relative;
-    }
-    #btnGenerateGCode {
-      position: relative;
-      left: 10px;
-    }
-    #btnExport {
-      position: relative;
-      left: 110px;
-    }
-    #btnInput {
-      position: relative;
-      left: 120px;
-    }
-    #btnHelp {
-      position: relative;
-      left: 220px;
+    .panel {
+      height: 24px;
+      width: 100%;
+      border-style: solid;
+      border-color: #bbbbbb;
+      border-width: 0 0 1px 0;
+      #btnStart, #btnGenerateGCode, #btnExport, #btnInput, #btnHelp, .spacing {
+        height: 24px;
+        border-style: solid;
+        border-color: #bbbbbb;
+        border-width: 1px 1px 0 0;
+      }
+      #btnStart, #btnGenerateGCode, #btnExport, #btnInput, #btnHelp {
+        padding: 3px 4px 1px 4px;
+      }
+      #btnInput {
+        padding-top: 0;
+        padding-bottom: 5px;
+      }
+      .spacing {
+        margin-left: 40px;
+        padding: 3px 0 1px 0;
+      }
     }
   }
 

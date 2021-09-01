@@ -1158,7 +1158,7 @@ const actionsWalec = {
                             dx / 2,
                             NP, NQ, u, w, f1,
                             NP, d,
-                            h0 + h,
+                            -(h0 + h),
                             NQ, d0,
                             NP, NQ, f2
                         ];
@@ -1218,8 +1218,8 @@ const actionsWalec = {
                             dx / 2,
                             NP, NQ, u, w, f1,
                             NP, d - 2 * h,
-                            1,
-                            NQ, d, h,
+                            -h0,
+                            NQ, d, -(h0 + h),
                             NP, NQ, f2
                         ];
                         let elementsTotal = elementsStrings.map((e, i) => {
@@ -1249,13 +1249,13 @@ const actionsWalec = {
                             N`, ` X`, ` Z`, `
                             G70 P`, ` Q`, ` F`
                         ];
-                        let elementsValues = [
+                        let elementsValues = [ // со старта давать Г01 в шчежке, или начать с Г0 там где едет по воздуху?
                             d, -h0 + 1,
                             dx / 2,
                             NP, NQ, u, w, f1,
                             NP, d + 2 * h,
-                            1,
-                            NQ, d, h,
+                            -h0,
+                            NQ, d, -(h0 + h),
                             NP, NQ, f2
                         ];
                         let elementsTotal = elementsStrings.map((e, i) => {
@@ -1307,7 +1307,7 @@ const actionsWalec = {
                         let elementsValues = [
                             d0, -h0 + 1,
                             r,
-                            d + p / 1000, h, q, p, f
+                            d + p / 1000, h + 1, q, p, f
                         ];
                         let elementsTotal = elementsStrings.map((e, i) => {
                             return e + elementsValues[i]
@@ -1701,7 +1701,7 @@ function exportObject() {
 
     let a = document.createElement('a');
     a.href = "data:application/octet-stream," + encodeURIComponent(JSON.stringify(przygotowka));
-    a.download = `${przygotowka.nazwa} (${dateTimeFormat(1)}).txt`;
+    a.download = `${przygotowka.nazwa} (${dateTimeFormat(1)}).json`;
     a.click();
 }
 
